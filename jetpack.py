@@ -2,7 +2,7 @@ import pygame
 import sys
 from math import floor
 
-UPDATES_PER_SEC = 30
+UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
 CLOCK = pygame.time.Clock()
@@ -13,7 +13,8 @@ BACKGROUND = pygame.Rect(0, 0, WIDTH, HEIGHT)
 GROUND = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
 GRAVITY = 1.0
-FORCE = -2.5
+FORCE = -1.75
+
 
 def init_game():
     global SCREEN
@@ -22,8 +23,9 @@ def init_game():
     SCREEN = pygame.display.set_mode(SIZE)
     pygame.display.set_caption("NEAT Jetpack")
 
+
 class Player:
-    rectangle = pygame.Rect(200, 0, 64, 128)
+    rectangle = pygame.Rect(200, 0, 48, 96)
 
     acceleration = GRAVITY
 
@@ -31,7 +33,7 @@ class Player:
         pass
 
     def draw(self):
-        pygame.draw.rect(SCREEN, (100, 100, 100), self.rectangle)
+        pygame.draw.rect(SCREEN, (255, 255, 255), self.rectangle)
 
     def affected_by_acceleration(self):
         # Crear rectangle copia
@@ -40,7 +42,7 @@ class Player:
         # Mirar si colisione
         if rect_copy.colliderect(GROUND):
             # Si colisione, moure al jugador sol lo suficient, per no enfonsarse
-            vert_dist = GROUND.y - (self.rectangle.y + 128)
+            vert_dist = GROUND.y - (self.rectangle.y + self.rectangle.height)
             self.rectangle.move_ip(0, vert_dist)
             self.acceleration = 0
         elif rect_copy.y <= 0:
@@ -57,23 +59,29 @@ class Player:
     def logic(self):
         self.affected_by_acceleration()
 
+
 def draw_background():
-    pygame.draw.rect(SCREEN, (150, 0, 50), BACKGROUND)
+    pygame.draw.rect(SCREEN, (0, 191, 255), BACKGROUND)
+
 
 def draw_ground():
-    pygame.draw.rect(SCREEN, (0, 255, 150), GROUND)
+    pygame.draw.rect(SCREEN, (105, 105, 105), GROUND)
+
 
 def draw_objects(objects):
     for obj in objects:
         obj.draw()
 
+
 def object_logic(objects):
     for obj in objects:
         obj.logic()
 
+
 def process_player_input(player):
     if pygame.mouse.get_pressed()[0]:
         player.acceleration += FORCE
+
 
 if __name__ in "__main__":
     player = Player()
