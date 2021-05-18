@@ -7,8 +7,10 @@ SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
 CLOCK = pygame.time.Clock()
 
+GROUND_HEIGHT = 100
+
 BACKGROUND = pygame.Rect(0, 0, WIDTH, HEIGHT)
-GROUND = pygame.Rect(0, HEIGHT - 180, WIDTH, 180)
+GROUND = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
 GRAVITY = 1.0
 FORCE = -2.5
@@ -21,7 +23,7 @@ def init_game():
     pygame.display.set_caption("NEAT Jetpack")
 
 class Player:
-    rectangle = pygame.Rect(WIDTH//2, 0, 64, 128)
+    rectangle = pygame.Rect(200, 0, 64, 128)
 
     acceleration = GRAVITY
 
@@ -56,7 +58,7 @@ class Player:
         self.affected_by_acceleration()
 
 def draw_background():
-    pygame.draw.rect(SCREEN, (255, 0, 150), BACKGROUND)
+    pygame.draw.rect(SCREEN, (150, 0, 50), BACKGROUND)
 
 def draw_ground():
     pygame.draw.rect(SCREEN, (0, 255, 150), GROUND)
@@ -88,3 +90,8 @@ if __name__ in "__main__":
         draw_objects(objects)
         draw_ground()
         pygame.display.flip()
+
+# TODO: Dibuixar sprites del fondo i del terra (Galajat)
+# TODO: Dibuixar sprites del personatge i objectes (Galajat)
+# TODO: Fer el desplaçament del fondo (Galajat)
+# TODO: Començar a mirar tema NEAT (Joe)
