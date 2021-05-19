@@ -6,6 +6,7 @@ UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
 BACKGROUND = None
+FAROLES = None
 GROUND = None
 GROUND_C = None
 CLOCK = pygame.time.Clock()
@@ -32,7 +33,7 @@ class MovingImages():
         SCREEN.blits([el for el in zip(self.images, self.rects)])
 
 def init_game():
-    global SCREEN, BACKGROUND, GROUND, GROUND_C
+    global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
     pygame.init()
 
     SCREEN = pygame.display.set_mode(SIZE)
@@ -43,14 +44,26 @@ def init_game():
     gr_image = pygame.image.load("assets/ground.png").convert_alpha()
     GROUND_IMAGES = [pygame.transform.scale(gr_image, (gr_image.get_rect().width,GROUND_HEIGHT))] * (ceil(WIDTH/gr_image.get_rect().width) + 1)
 
+    fa_image = pygame.image.load("assets/farola.png")
+    fa_image.set_colorkey((255,255,255))
+    fa_image = fa_image.convert_alpha()
+    new_width = floor(fa_image.get_rect().width * 0.8)
+    new_height = floor(fa_image.get_rect().height * 0.8)
+    FA_IMAGES = [pygame.transform.scale(fa_image, (new_width, new_height))] * (ceil(WIDTH/fa_image.get_rect().width) + 1)
+
     BACKGROUND_RECTS = [img.get_rect() for img in BACKGROUND_IMAGES]
     GROUND_RECTS = [img.get_rect() for img in GROUND_IMAGES]
+    FA_RECTS = [img.get_rect() for img in FA_IMAGES]
 
     for rect in GROUND_RECTS:
         rect.y = HEIGHT - GROUND_HEIGHT
 
+    for rect in FA_RECTS:
+        rect.y = HEIGHT - GROUND_HEIGHT - rect.height
+
     BACKGROUND = MovingImages(3, BACKGROUND_IMAGES, BACKGROUND_RECTS)
     GROUND = MovingImages(8, GROUND_IMAGES, GROUND_RECTS)
+    FAROLES = MovingImages(3, FA_IMAGES, FA_RECTS, offset=200)
     GROUND_C = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
 
@@ -90,6 +103,7 @@ class Player:
 def draw_background():
     BG_COLOR = (0, 191, 255)
     BACKGROUND.update()
+    FAROLES.update()
 
 
 def draw_ground():
@@ -117,12 +131,14 @@ if __name__ in "__main__":
     player = Player()
     objects = []
     init_game()
-    while True:
+    RUNNING = True
+    while RUNNING:
         CLOCK.tick(UPDATES_PER_SEC)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                print("HAndled")
                 # print(sum(fps)/len(fps))
-                sys.exit()
+                RUNNING = False
         draw_background()
         process_player_input(player)
         object_logic(objects + [player])
@@ -131,6 +147,8 @@ if __name__ in "__main__":
         draw_ground()
         #fps.append(CLOCK.get_fps())
         pygame.display.flip()
+    print("Exited")
+    sys.exit()
 
 # TODO: Dibuixar sprites del fondo i del terra (Galajat)
 # TODO: Dibuixar sprites del personatge i objectes (Galajat)
