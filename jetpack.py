@@ -5,6 +5,9 @@ from math import floor, ceil
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
+BACKGROUND = None
+GROUND = None
+GROUND_C = None
 CLOCK = pygame.time.Clock()
 
 GROUND_HEIGHT = 100
@@ -13,39 +16,42 @@ GRAVITY = 1.0
 FORCE = -1.75
 
 class MovingImages():
-    def __init__(self, speed, images, rects):
+    def __init__(self, speed, images, rects, offset=0):
         self.speed = speed
         self.images = images
         self.rects = rects
         for i, rect in enumerate(self.rects):
-            rect.move_ip(i * rect.width, 0)
+            rect.move_ip(i * (rect.width + offset), 0)
+        self.offset = offset
 
     def update(self):
         for i, rect in enumerate(self.rects):
             self.rects[i].move_ip(-self.speed, 0)
             if rect.x + rect.width <= 0:
-                self.rects[i] = pygame.Rect(max([rc.x + rc.width for rc in self.rects]) - 18, rect.y, rect.width, rect.height)
+                self.rects[i] = pygame.Rect(max([rc.x + rc.width for rc in self.rects]) - 18 + self.offset, rect.y, rect.width, rect.height)
         SCREEN.blits([el for el in zip(self.images, self.rects)])
 
-BACKGROUND_IMAGES = [pygame.image.load("assets/grey.png")] * (ceil(WIDTH/300) + 1)
-GROUND_IMAGES = [pygame.image.load("assets/gr.png")] * (ceil(WIDTH/300) + 1)
-
-BACKGROUND_RECTS = [img.get_rect() for img in BACKGROUND_IMAGES]
-GROUND_RECTS = [img.get_rect() for img in GROUND_IMAGES]
-
-for rect in GROUND_RECTS:
-    rect.y = HEIGHT - GROUND_HEIGHT
-
-BACKGROUND = MovingImages(4, BACKGROUND_IMAGES, BACKGROUND_RECTS)
-GROUND = MovingImages(10, GROUND_IMAGES, GROUND_RECTS)
-GROUND_C = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
-
 def init_game():
-    global SCREEN
+    global SCREEN, BACKGROUND, GROUND, GROUND_C
     pygame.init()
 
     SCREEN = pygame.display.set_mode(SIZE)
     pygame.display.set_caption("NEAT Jetpack")
+
+    bg_image = pygame.image.load("assets/background.png").convert_alpha()
+    BACKGROUND_IMAGES = [pygame.transform.scale(bg_image, (bg_image.get_rect().width,HEIGHT))] * (ceil(WIDTH/bg_image.get_rect().width) + 1)
+    gr_image = pygame.image.load("assets/ground.png").convert_alpha()
+    GROUND_IMAGES = [pygame.transform.scale(gr_image, (gr_image.get_rect().width,GROUND_HEIGHT))] * (ceil(WIDTH/gr_image.get_rect().width) + 1)
+
+    BACKGROUND_RECTS = [img.get_rect() for img in BACKGROUND_IMAGES]
+    GROUND_RECTS = [img.get_rect() for img in GROUND_IMAGES]
+
+    for rect in GROUND_RECTS:
+        rect.y = HEIGHT - GROUND_HEIGHT
+
+    BACKGROUND = MovingImages(3, BACKGROUND_IMAGES, BACKGROUND_RECTS)
+    GROUND = MovingImages(8, GROUND_IMAGES, GROUND_RECTS)
+    GROUND_C = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
 
 class Player:
@@ -107,20 +113,23 @@ def process_player_input(player):
 
 
 if __name__ in "__main__":
+    fps = []
     player = Player()
-    objects = [player]
+    objects = []
     init_game()
     while True:
         CLOCK.tick(UPDATES_PER_SEC)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                # print(sum(fps)/len(fps))
                 sys.exit()
         draw_background()
         process_player_input(player)
-        object_logic(objects)
+        object_logic(objects + [player])
         draw_objects(objects)
+        player.draw()
         draw_ground()
-        # print(CLOCK.get_fps())
+        #fps.append(CLOCK.get_fps())
         pygame.display.flip()
 
 # TODO: Dibuixar sprites del fondo i del terra (Galajat)
