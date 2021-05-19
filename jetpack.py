@@ -1,6 +1,6 @@
 import pygame
 import sys
-from math import floor
+from math import floor, ceil
 
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
@@ -12,29 +12,33 @@ GROUND_HEIGHT = 100
 GRAVITY = 1.0
 FORCE = -1.75
 
-class MovingImage():
-    def __init__(self, speed, image, rect):
+class MovingImages():
+    def __init__(self, speed, images, rects):
         self.speed = speed
-        self.image = pygame.transform.scale(image, (rect.width, rect.height))
-        self.rectangle = rect
+        self.images = images
+        self.rects = rects
+        for i, rect in enumerate(self.rects):
+            rect.move_ip(i * rect.width, 0)
 
     def update(self):
-        self.rectangle.move_ip(-self.speed, 0)
-        if self.rectangle.x <= -self.rectangle.width:
-            self.rectangle.move_ip(-self.rectangle.x, 0)
-        SCREEN.blit(self.image, self.rectangle)
+        for i, rect in enumerate(self.rects):
+            self.rects[i].move_ip(-self.speed, 0)
+            if rect.x + rect.width <= 0:
+                self.rects[i] = pygame.Rect(max([rc.x + rc.width for rc in self.rects]) - 18, rect.y, rect.width, rect.height)
+        SCREEN.blits([el for el in zip(self.images, self.rects)])
 
-BACKGROUND_REC1 = pygame.Rect(0, 0, WIDTH, HEIGHT)
-BACKGROUND_REC2 = pygame.Rect(WIDTH, 0, WIDTH, HEIGHT)
-BACKGROUND_IMAGE = pygame.image.load("assets/background.png")
-GROUND_REC1 = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
-GROUND_REC2 = pygame.Rect(WIDTH, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
-GROUND_IMAGE = pygame.image.load("assets/ground.png")
+BACKGROUND_IMAGES = [pygame.image.load("assets/grey.png")] * (ceil(WIDTH/300) + 1)
+GROUND_IMAGES = [pygame.image.load("assets/gr.png")] * (ceil(WIDTH/300) + 1)
 
-BACKGROUND1 = MovingImage(4, BACKGROUND_IMAGE, BACKGROUND_REC1)
-GROUND1 = MovingImage(10, GROUND_IMAGE, GROUND_REC1)
-BACKGROUND2 = MovingImage(4, BACKGROUND_IMAGE, BACKGROUND_REC2)
-GROUND2 = MovingImage(10, GROUND_IMAGE, GROUND_REC2)
+BACKGROUND_RECTS = [img.get_rect() for img in BACKGROUND_IMAGES]
+GROUND_RECTS = [img.get_rect() for img in GROUND_IMAGES]
+
+for rect in GROUND_RECTS:
+    rect.y = HEIGHT - GROUND_HEIGHT
+
+BACKGROUND = MovingImages(4, BACKGROUND_IMAGES, BACKGROUND_RECTS)
+GROUND = MovingImages(10, GROUND_IMAGES, GROUND_RECTS)
+GROUND_C = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
 def init_game():
     global SCREEN
@@ -55,17 +59,14 @@ class Player:
     def draw(self):
         pygame.draw.rect(SCREEN, (255, 255, 255), self.rectangle)
 
-    def collides_with_ground(self, copy):
-        return copy.colliderect(GROUND1.rectangle) or copy.colliderect(GROUND2.rectangle)
-
     def affected_by_acceleration(self):
         # Crear rectangle copia
         # Moure copia
         rect_copy = self.rectangle.move(0, floor(self.acceleration))
         # Mirar si colisione
-        if self.collides_with_ground(rect_copy):
+        if rect_copy.colliderect(GROUND_C):
             # Si colisione, moure al jugador sol lo suficient, per no enfonsarse
-            vert_dist = GROUND1.rectangle.y - (self.rectangle.y + self.rectangle.height)
+            vert_dist = GROUND_C.y - (self.rectangle.y + self.rectangle.height)
             self.rectangle.move_ip(0, vert_dist)
             self.acceleration = 0
         elif rect_copy.y <= 0:
@@ -82,14 +83,12 @@ class Player:
 
 def draw_background():
     BG_COLOR = (0, 191, 255)
-    BACKGROUND1.update()
-    BACKGROUND2.update()
+    BACKGROUND.update()
 
 
 def draw_ground():
     G_COLOR = (105, 105, 105)
-    GROUND1.update()
-    GROUND2.update()
+    GROUND.update()
 
 
 def draw_objects(objects):
@@ -121,7 +120,7 @@ if __name__ in "__main__":
         object_logic(objects)
         draw_objects(objects)
         draw_ground()
-        print(CLOCK.get_fps())
+        # print(CLOCK.get_fps())
         pygame.display.flip()
 
 # TODO: Dibuixar sprites del fondo i del terra (Galajat)
