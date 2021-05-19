@@ -16,7 +16,8 @@ GROUND_HEIGHT = 100
 GRAVITY = 1.0
 FORCE = -1.75
 
-class MovingImages():
+
+class MovingImages:
     def __init__(self, speed, images, rects, offset=0):
         self.speed = speed
         self.images = images
@@ -29,8 +30,10 @@ class MovingImages():
         for i, rect in enumerate(self.rects):
             self.rects[i].move_ip(-self.speed, 0)
             if rect.x + rect.width <= 0:
-                self.rects[i] = pygame.Rect(max([rc.x + rc.width for rc in self.rects]) - 18 + self.offset, rect.y, rect.width, rect.height)
+                self.rects[i] = pygame.Rect(max([rc.x + rc.width for rc in self.rects]) - 18 + self.offset, rect.y,
+                                            rect.width, rect.height)
         SCREEN.blits([el for el in zip(self.images, self.rects)])
+
 
 def init_game():
     global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
@@ -40,16 +43,19 @@ def init_game():
     pygame.display.set_caption("NEAT Jetpack")
 
     bg_image = pygame.image.load("assets/background.png").convert_alpha()
-    BACKGROUND_IMAGES = [pygame.transform.scale(bg_image, (bg_image.get_rect().width,HEIGHT))] * (ceil(WIDTH/bg_image.get_rect().width) + 1)
+    BACKGROUND_IMAGES = [pygame.transform.scale(bg_image, (WIDTH, HEIGHT))] * (ceil(WIDTH/bg_image.get_rect().width)
+                                                                               + 1)
     gr_image = pygame.image.load("assets/ground.png").convert_alpha()
-    GROUND_IMAGES = [pygame.transform.scale(gr_image, (gr_image.get_rect().width,GROUND_HEIGHT))] * (ceil(WIDTH/gr_image.get_rect().width) + 1)
+    GROUND_IMAGES = [pygame.transform.scale(gr_image, (WIDTH, GROUND_HEIGHT))] * (ceil(WIDTH/gr_image.get_rect().width)
+                                                                                  + 1)
 
     fa_image = pygame.image.load("assets/farola.png")
-    fa_image.set_colorkey((255,255,255))
+    fa_image.set_colorkey((255, 255, 255))
     fa_image = fa_image.convert_alpha()
     new_width = floor(fa_image.get_rect().width * 0.8)
     new_height = floor(fa_image.get_rect().height * 0.8)
-    FA_IMAGES = [pygame.transform.scale(fa_image, (new_width, new_height))] * (ceil(WIDTH/fa_image.get_rect().width) + 1)
+    FA_IMAGES = [pygame.transform.scale(fa_image, (new_width, new_height))] * (ceil(WIDTH/fa_image.get_rect().width)
+                                                                               + 1)
 
     BACKGROUND_RECTS = [img.get_rect() for img in BACKGROUND_IMAGES]
     GROUND_RECTS = [img.get_rect() for img in GROUND_IMAGES]
@@ -136,7 +142,7 @@ if __name__ in "__main__":
         CLOCK.tick(UPDATES_PER_SEC)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                print("HAndled")
+                print("Handled")
                 # print(sum(fps)/len(fps))
                 RUNNING = False
         draw_background()
