@@ -34,6 +34,22 @@ class MovingImages:
                                             rect.width, rect.height)
         SCREEN.blits([el for el in zip(self.images, self.rects)])
 
+class AnimatedSprite:
+    def __init__(self, images, speed):
+        self.images = images
+        self.speed = speed
+        self.frame_counter = 0
+        self.image_index = 0
+
+    def update(self):
+        self.frame_counter += 1
+        if self.frame_counter % self.speed == 0:
+            self.frame_counter = 0
+            self.image_index = (self.image_index + 1) % len(self.images)
+
+    def draw(self, rect):
+        SCREEN.blit(self.images[self.image_index], rect)
+
 
 def init_game():
     global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
@@ -76,13 +92,32 @@ def init_game():
 class Player:
     rectangle = pygame.Rect(200, 0, 48, 96)
 
+    air_sprite = None
+    prop_sprite = None
+    running_sp = None
+    # 0: running
+    # 1: falling
+    # 2: propulsing
+    state = 0
+
     acceleration = GRAVITY
 
     def __init__(self):
-        pass
+        self.air_sprite = pygame.image.load("assets/on_air.png").convert_alpha()
+        self.prop_sprite = pygame.image.load("assets/prop.png").convert_alpha()
+        self.running_sp = AnimatedSprite(
+            [pygame.image.load("assets/running/"+ str(i) + ".png").convert_alpha()
+            for i in range(1,9)],3)
 
     def draw(self):
-        pygame.draw.rect(SCREEN, (255, 255, 255), self.rectangle)
+        if self.state == 0:
+            self.running_sp.update()
+            self.running_sp.draw(self.rectangle)
+        elif self.state == 1:
+            SCREEN.blit(self.air_sprite, self.rectangle)
+        elif self.state == 2:
+            SCREEN.blit(self.prop_sprite, self.rectangle)
+
 
     def affected_by_acceleration(self):
         # Crear rectangle copia
@@ -104,6 +139,17 @@ class Player:
 
     def logic(self):
         self.affected_by_acceleration()
+        if self.acceleration == 0:
+            # Running on the ground
+            self.state = 0
+        elif not pygame.mouse.get_pressed()[0] and not self.state == 0:
+            # Player not running and not propulsing
+            self.state = 1
+
+    def process_input(self):
+        if pygame.mouse.get_pressed()[0]:
+            player.acceleration += FORCE
+            self.state = 2
 
 
 def draw_background():
@@ -127,33 +173,26 @@ def object_logic(objects):
         obj.logic()
 
 
-def process_player_input(player):
-    if pygame.mouse.get_pressed()[0]:
-        player.acceleration += FORCE
-
-
 if __name__ in "__main__":
+    init_game()
     fps = []
     player = Player()
     objects = []
-    init_game()
     RUNNING = True
     while RUNNING:
         CLOCK.tick(UPDATES_PER_SEC)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                print("Handled")
                 # print(sum(fps)/len(fps))
                 RUNNING = False
         draw_background()
-        process_player_input(player)
+        player.process_input()
         object_logic(objects + [player])
         draw_objects(objects)
         player.draw()
         draw_ground()
         #fps.append(CLOCK.get_fps())
         pygame.display.flip()
-    print("Exited")
     sys.exit()
 
 # TODO: Dibuixar sprites del fondo i del terra (Galajat)
