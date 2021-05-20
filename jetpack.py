@@ -1,6 +1,7 @@
 import pygame
 import sys
 from math import floor, ceil
+import random
 
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
@@ -12,6 +13,9 @@ GROUND_C = None
 CLOCK = pygame.time.Clock()
 
 GROUND_HEIGHT = 100
+
+PLAYER_WIDTH = 64
+PLAYER_HEIGHT = 128
 
 GRAVITY = 1.0
 FORCE = -1.75
@@ -90,11 +94,12 @@ def init_game():
 
 
 class Player:
-    rectangle = pygame.Rect(200, 0, 48, 96)
+    rectangle = pygame.Rect(200, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 
     air_sprite = None
     prop_sprite = None
     running_sp = None
+    head_sprite = None
     # 0: running
     # 1: falling
     # 2: propulsing
@@ -104,10 +109,16 @@ class Player:
 
     def __init__(self):
         self.air_sprite = pygame.image.load("assets/on_air.png").convert_alpha()
+        self.air_sprite = pygame.transform.scale(self.air_sprite, (PLAYER_WIDTH, PLAYER_HEIGHT))
         self.prop_sprite = pygame.image.load("assets/prop.png").convert_alpha()
+        self.prop_sprite = pygame.transform.scale(self.prop_sprite, (PLAYER_WIDTH, PLAYER_HEIGHT))
         self.running_sp = AnimatedSprite(
             [pygame.image.load("assets/running/"+ str(i) + ".png").convert_alpha()
             for i in range(1,9)],3)
+        for i, sp in enumerate(self.running_sp.images):
+            self.running_sp.images[i] = pygame.transform.scale(sp, (PLAYER_WIDTH, PLAYER_HEIGHT))
+        head = random.randint(1,4)
+        self.head_sprite = pygame.image.load("assets/pibes/"+ str(head) + ".png").convert_alpha()
 
     def draw(self):
         if self.state == 0:
@@ -117,6 +128,7 @@ class Player:
             SCREEN.blit(self.air_sprite, self.rectangle)
         elif self.state == 2:
             SCREEN.blit(self.prop_sprite, self.rectangle)
+        SCREEN.blit(self.head_sprite, self.rectangle)
 
 
     def affected_by_acceleration(self):
@@ -139,7 +151,7 @@ class Player:
 
     def logic(self):
         self.affected_by_acceleration()
-        if self.rectangle.y >= (HEIGHT - GROUND_HEIGHT - 96 - 1):
+        if self.rectangle.y >= (HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 1):
             # Running on the ground
             self.state = 0
         elif not pygame.mouse.get_pressed()[0] and not self.state == 0:
