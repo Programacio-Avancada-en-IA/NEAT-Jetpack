@@ -139,7 +139,7 @@ class Player:
 
     def logic(self):
         self.affected_by_acceleration()
-        if self.acceleration == 0:
+        if self.rectangle.y >= (HEIGHT - GROUND_HEIGHT - 96 - 1):
             # Running on the ground
             self.state = 0
         elif not pygame.mouse.get_pressed()[0] and not self.state == 0:
