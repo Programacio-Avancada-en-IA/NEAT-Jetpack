@@ -12,6 +12,8 @@ GROUND = None
 GROUND_C = None
 CLOCK = pygame.time.Clock()
 
+GAME_SPEED = 8
+
 GROUND_HEIGHT = 100
 
 PLAYER_WIDTH = 64
@@ -54,6 +56,51 @@ class AnimatedSprite:
     def draw(self, rect):
         SCREEN.blit(self.images[self.image_index], rect)
 
+class Coil:
+
+    rect = None
+    size = 64
+    image = pygame.image.load("assets/coil.png")
+    center_image = pygame.image.load("assets/coil_center.png")
+
+    def __init__(self, location):
+        self.x, self.y = location
+        self.image = self.image.convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.size, self.size))
+        self.center_image = self.center_image.convert_alpha()
+        self.center_image = pygame.transform.scale(self.center_image, (self.size, self.size))
+        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
+
+    def draw(self):
+        SCREEN.blit(self.image, self.rect)
+
+    def draw_center(self):
+        SCREEN.blit(self.center_image, self.rect)
+
+    def logic(self):
+        self.rect.move_ip(-GAME_SPEED, 0)
+
+
+class CoilPair:
+
+    objects = []
+    # Location per crear el coil 1
+    # Direccio de les 5 possibles
+    # Mida del laser, si mes gran o petit
+    def __init__(self, coil_1_location, direction, size):
+        self.coil_1 = Coil(coil_1_location)
+        # TODO: Logica de creacio de CoilPair
+
+    def draw(self):
+        for obj in self.objects:
+            obj.draw()
+
+    def collides(self, player):
+        for obj in self.objects():
+            if player.rectangle.colliderect(obj.rect):
+                return True
+        return False
+
 
 def init_game():
     global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
@@ -88,7 +135,7 @@ def init_game():
         rect.y = HEIGHT - GROUND_HEIGHT - rect.height
 
     BACKGROUND = MovingImages(3, BACKGROUND_IMAGES, BACKGROUND_RECTS)
-    GROUND = MovingImages(8, GROUND_IMAGES, GROUND_RECTS)
+    GROUND = MovingImages(GAME_SPEED, GROUND_IMAGES, GROUND_RECTS)
     FAROLES = MovingImages(3, FA_IMAGES, FA_RECTS, offset=200)
     GROUND_C = pygame.Rect(0, HEIGHT - GROUND_HEIGHT, WIDTH, GROUND_HEIGHT)
 
@@ -117,7 +164,7 @@ class Player:
             for i in range(1,9)],3)
         for i, sp in enumerate(self.running_sp.images):
             self.running_sp.images[i] = pygame.transform.scale(sp, (PLAYER_WIDTH, PLAYER_HEIGHT))
-        head = random.randint(1,4)
+        head = random.randint(1,5)
         self.head_sprite = pygame.image.load("assets/pibes/"+ str(head) + ".png").convert_alpha()
 
     def draw(self):
@@ -189,7 +236,7 @@ if __name__ in "__main__":
     init_game()
     fps = []
     player = Player()
-    objects = []
+    objects = [Coil((2000, 350))]
     RUNNING = True
     while RUNNING:
         CLOCK.tick(UPDATES_PER_SEC)
@@ -206,8 +253,3 @@ if __name__ in "__main__":
         #fps.append(CLOCK.get_fps())
         pygame.display.flip()
     sys.exit()
-
-# TODO: Dibuixar sprites del fondo i del terra (Galajat)
-# TODO: Dibuixar sprites del personatge i objectes (Galajat)
-# TODO: Fer el desplaçament del fondo (Galajat)
-# TODO: Començar a mirar tema NEAT (Joe)
