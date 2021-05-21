@@ -92,14 +92,20 @@ class Laser:
 	rect = None
 	image = None
 	mask = None
-	hor_size = 16
-	ver_size = 64
+	LASER_SHORT = 16
+	LASER_LONG = 64
+	hor_size = LASER_SHORT
+	ver_size = LASER_LONG
 
 	def __init__(self, location, direction):
 		self.x, self.y = location
 		self.image = LASER_IMAGES[direction]
-		self.image = pygame.transform.scale(self.image, (self.hor_size, self.ver_size))
-		self.rect = pygame.Rect(self.x, self.y, self.hor_size, self.ver_size)
+		if direction == 0 or direction == 4:
+			self.image = pygame.transform.scale(self.image, (self.hor_size, self.ver_size))
+			self.rect = pygame.Rect(self.x, self.y, self.hor_size, self.ver_size)
+		elif direction == 2:
+			self.image = pygame.transform.scale(self.image, (self.LASER_LONG, self.LASER_SHORT))
+			self.rect = pygame.Rect(self.x, self.y, self.ver_size, self.hor_size)
 		self.mask = pygame.mask.from_surface(self.image)
 
 	def collides(self, player):
@@ -134,15 +140,24 @@ class CoilPair:
 		# Up
 		half_coil_size = self.coil_1.size // 2
 		self.lasers = []
-		starting_point = self.coil_1.y + half_coil_size
 		if direction == 0:
+			starting_point = self.coil_1.y + half_coil_size
 			elem_x = self.coil_1.x + half_coil_size - (Laser.hor_size // 2)
 			last_y = 0
 			for i in range(size):
 				self.lasers.append(Laser((elem_x, starting_point - (i + 1) * Laser.ver_size), direction))
 				last_y = starting_point - (i + 1) * Laser.ver_size
 			self.coil_2 = Coil((self.coil_1.x, last_y - Laser.ver_size + half_coil_size))
+		elif direction == 2:
+			elem_y = self.coil_1.y + half_coil_size - (Laser.LASER_SHORT // 2)
+			starting_point = self.coil_1.x + half_coil_size
+			last_x = 0
+			for i in range(size):
+				self.lasers.append(Laser((starting_point + i * Laser.LASER_LONG, elem_y), direction))
+				last_x = starting_point + i * Laser.LASER_LONG
+			self.coil_2 = Coil((last_x + Laser.LASER_LONG - half_coil_size, self.coil_1.y))
 		elif direction == 4:
+			starting_point = self.coil_1.y + half_coil_size
 			elem_x = self.coil_1.x + half_coil_size - (Laser.hor_size // 2)
 			last_y = 0
 			for i in range(size):
@@ -323,7 +338,7 @@ if __name__ in "__main__":
 	init_game()
 	fps = []
 	player = Player()
-	objects = [CoilPair((3000, 500), 0, 3), CoilPair((2000, 30), 4, 5)]
+	objects = [CoilPair((4000, 300), 2, 5)]
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
