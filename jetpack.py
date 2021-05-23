@@ -10,6 +10,7 @@ BACKGROUND = None
 FAROLES = None
 GROUND = None
 GROUND_C = None
+RUNNING = True
 CLOCK = pygame.time.Clock()
 
 GAME_SPEED = 8
@@ -76,6 +77,7 @@ class Coil:
 		self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
 	def draw(self):
+		pygame.draw.rect(SCREEN, (0, 0, 255), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
 	def draw_center(self):
@@ -85,7 +87,22 @@ class Coil:
 		self.rect.move_ip(-GAME_SPEED, 0)
 
 	def collides(self, player):
+		if self.collides_rect(player):
+			if self.collides_mask(player):
+				return True
+		return False
+
+	def collides_rect(self, player):
 		return self.rect.colliderect(player.rectangle)
+
+	def collides_mask(self, player):
+		player_mask = pygame.mask.from_surface(player.current_sprite)
+		player_head_mask = pygame.mask.from_surface(player.head_sprite)
+		self.mask = pygame.mask.from_surface(self.image)
+		offset = (player.rectangle.x - self.rect.x, round(player.rectangle.y) - self.rect.y)
+		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
+			return True
+		return False
 
 # A laser object that appears between 2 coils
 class Laser:
@@ -123,13 +140,15 @@ class Laser:
 
 	def collides_mask(self, player):
 		player_mask = pygame.mask.from_surface(player.current_sprite)
+		player_head_mask = pygame.mask.from_surface(player.head_sprite)
 		self.mask = pygame.mask.from_surface(self.image)
-		offset = (player.rectangle.y - self.image.get_rect().x, round(player.rectangle.y) - self.image.get_rect().y)
-		if player_mask.overlap(self.mask, offset):
+		offset = (player.rectangle.x - self.rect.x, round(player.rectangle.y - self.rect.y))
+		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
 			return True
 		return False
 
 	def draw(self):
+		pygame.draw.rect(SCREEN, (255, 0, 0), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
 	def logic(self):
@@ -214,7 +233,6 @@ class CoilPair:
 	def collides(self, player):
 		for obj in self.objects:
 			if obj.collides(player):
-				print("Collided with CoilPair")
 				return True
 		return False
 
@@ -302,6 +320,7 @@ class Player:
 		elif self.state == 2:
 			self.current_sprite = self.prop_sprite
 			SCREEN.blit(self.prop_sprite, self.rectangle)
+		pygame.draw.rect(SCREEN, (0, 255, 0), self.rectangle, width=3)
 		SCREEN.blit(self.head_sprite, self.rectangle)
 
 	def affected_by_acceleration(self):
@@ -337,9 +356,10 @@ class Player:
 			self.state = 2
 
 	def check_for_interactions(self, objects):
+		global RUNNING
 		for obj in objects:
 			if obj.collides(self):
-				print("Restarting")
+				RUNNING = False
 
 
 def draw_background():
@@ -364,7 +384,6 @@ def object_logic(objects):
 
 
 if __name__ in "__main__":
-	RUNNING = True
 	init_game()
 	fps = []
 	player = Player()
@@ -384,4 +403,6 @@ if __name__ in "__main__":
 		draw_ground()
 		# fps.append(CLOCK.get_fps())
 		pygame.display.flip()
+		# inp = input("")
+
 	sys.exit()
