@@ -12,6 +12,7 @@ GROUND = None
 GROUND_C = None
 RUNNING = True
 CLOCK = pygame.time.Clock()
+objects = []
 
 GAME_SPEED = 8
 
@@ -77,7 +78,7 @@ class Coil:
 		self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
 	def draw(self):
-		pygame.draw.rect(SCREEN, (0, 0, 255), self.rect, width=3)
+		# pygame.draw.rect(SCREEN, (0, 0, 255), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
 	def draw_center(self):
@@ -148,7 +149,7 @@ class Laser:
 		return False
 
 	def draw(self):
-		pygame.draw.rect(SCREEN, (255, 0, 0), self.rect, width=3)
+		# pygame.draw.rect(SCREEN, (255, 0, 0), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
 	def logic(self):
@@ -236,6 +237,31 @@ class CoilPair:
 				return True
 		return False
 
+class CoilPairGenerator:
+
+	def __init__(self):
+		self.last_obstacle = 0
+
+	def generate_pair(self):
+		global objects
+		direction = random.randint(0, 4) # Random orientation between 5 possibles
+		size = random.randint(2, 5) # Random size between 2 and 5 lasers
+		height = random.randint(100, 620) # Possible heights
+		pair = CoilPair((2000, height), direction, size)
+		objects.append(pair)
+
+	def logic(self):
+		self.last_obstacle += GAME_SPEED
+		if self.last_obstacle >= 1000:
+			self.last_obstacle = 0
+			self.generate_pair()
+
+	# Does not draw anything
+	def draw(self):
+		pass
+
+	def collides(self, player):
+		pass
 
 def init_game():
 	global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
@@ -320,7 +346,7 @@ class Player:
 		elif self.state == 2:
 			self.current_sprite = self.prop_sprite
 			SCREEN.blit(self.prop_sprite, self.rectangle)
-		pygame.draw.rect(SCREEN, (0, 255, 0), self.rectangle, width=3)
+		# pygame.draw.rect(SCREEN, (0, 255, 0), self.rectangle, width=3)
 		SCREEN.blit(self.head_sprite, self.rectangle)
 
 	def affected_by_acceleration(self):
@@ -381,13 +407,19 @@ def draw_objects(objects):
 def object_logic(objects):
 	for obj in objects:
 		obj.logic()
+	for i, obj in enumerate(objects):
+		if type(obj) == CoilPair:
+			if obj.coil_2.x + Coil.size < 0:
+				objects.pop(i)
+				break
+
 
 
 if __name__ in "__main__":
 	init_game()
 	fps = []
 	player = Player()
-	objects = [CoilPair((2000, 300), 3, 5)]
+	objects = [CoilPairGenerator()]
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
