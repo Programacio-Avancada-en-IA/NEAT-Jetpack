@@ -114,7 +114,6 @@ class Laser:
 
 	def collides(self, player):
 		if self.collides_rect(player):
-			return True
 			if self.collides_mask(player):
 				return True
 		return False
@@ -124,7 +123,11 @@ class Laser:
 
 	def collides_mask(self, player):
 		player_mask = pygame.mask.from_surface(player.current_sprite)
-		return pygame.sprite.collide_mask(self.image, player.current_sprite)
+		self.mask = pygame.mask.from_surface(self.image)
+		offset = (player.rectangle.y - self.image.get_rect().x, round(player.rectangle.y) - self.image.get_rect().y)
+		if player_mask.overlap(self.mask, offset):
+			return True
+		return False
 
 	def draw(self):
 		SCREEN.blit(self.image, self.rect)
@@ -262,6 +265,7 @@ def init_game():
 
 class Player:
 	rectangle = pygame.Rect(200, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
+	x = 200
 
 	current_sprite = None
 	air_sprite = None
