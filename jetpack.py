@@ -1,6 +1,6 @@
 import pygame
 import sys
-from math import floor, ceil
+from math import floor, ceil, sqrt
 import random
 
 UPDATES_PER_SEC = 60
@@ -24,7 +24,7 @@ FORCE = -1.75
 
 LASER_IMAGES = [pygame.image.load("assets/vlaser.png"), pygame.image.load("assets/dulaser.png"), pygame.image.load("assets/hlaser.png"), pygame.image.load("assets/ddlaser.png"),pygame.image.load("assets/vlaser.png")]
 
-
+# An image that moves when updated, used for the background, ground and lights
 class MovingImages:
 	def __init__(self, speed, images, rects, offset=0):
 		self.speed = speed
@@ -42,7 +42,7 @@ class MovingImages:
 				                            rect.width, rect.height)
 		SCREEN.blits([el for el in zip(self.images, self.rects)])
 
-
+# A sprite with different frames, used to animate the character running
 class AnimatedSprite:
 	def __init__(self, images, speed):
 		self.images = images
@@ -60,7 +60,7 @@ class AnimatedSprite:
 		SCREEN.blit(self.images[self.image_index], rect)
 		return self.images[self.image_index]
 
-
+# A single electric ball that together with lasers and another ball form a CoilPair
 class Coil:
 	rect = None
 	size = 64
@@ -87,7 +87,7 @@ class Coil:
 	def collides(self, player):
 		return self.rect.colliderect(player.rectangle)
 
-
+# A laser object that appears between 2 coils
 class Laser:
 	rect = None
 	image = None
@@ -96,6 +96,7 @@ class Laser:
 	LASER_LONG = 64
 	hor_size = LASER_SHORT
 	ver_size = LASER_LONG
+	rect_size = round((hor_size // sqrt(2)) + (ver_size // sqrt(2)))
 
 	def __init__(self, location, direction):
 		self.x, self.y = location
@@ -103,6 +104,9 @@ class Laser:
 		if direction == 0 or direction == 4:
 			self.image = pygame.transform.scale(self.image, (self.hor_size, self.ver_size))
 			self.rect = pygame.Rect(self.x, self.y, self.hor_size, self.ver_size)
+		elif direction == 1 or direction == 3:
+			self.image = pygame.transform.scale(self.image, (Laser.rect_size, Laser.rect_size))
+			self.rect = pygame.Rect(self.x, self.y, Laser.rect_size, Laser.rect_size)
 		elif direction == 2:
 			self.image = pygame.transform.scale(self.image, (self.LASER_LONG, self.LASER_SHORT))
 			self.rect = pygame.Rect(self.x, self.y, self.ver_size, self.hor_size)
@@ -128,7 +132,7 @@ class Laser:
 	def logic(self):
 		self.rect.move_ip(-GAME_SPEED, 0)
 
-
+# A pair of coils connected by lasers, the main obstacles of the game
 class CoilPair:
 	objects = []
 
@@ -148,6 +152,17 @@ class CoilPair:
 				self.lasers.append(Laser((elem_x, starting_point - (i + 1) * Laser.ver_size), direction))
 				last_y = starting_point - (i + 1) * Laser.ver_size
 			self.coil_2 = Coil((self.coil_1.x, last_y - Laser.ver_size + half_coil_size))
+		elif direction == 1:
+			laser_offset = (Laser.LASER_SHORT // sqrt(2))
+			starting_x = self.coil_1.x + half_coil_size - (laser_offset // 2)
+			starting_y = self.coil_1.y + half_coil_size + (laser_offset // 2) - (Laser.rect_size)
+			last_x = last_y = 0
+			for i in range(size):
+				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),starting_y - i * (Laser.rect_size - laser_offset)), 1))
+				last_x = starting_x + i * (Laser.rect_size - laser_offset)
+				last_y = starting_y - i * (Laser.rect_size - laser_offset)
+			self.coil_2 = Coil((last_x + Laser.rect_size - (laser_offset // 2) - half_coil_size,
+								last_y + (laser_offset // 2) - half_coil_size))
 		elif direction == 2:
 			elem_y = self.coil_1.y + half_coil_size - (Laser.LASER_SHORT // 2)
 			starting_point = self.coil_1.x + half_coil_size
@@ -156,6 +171,17 @@ class CoilPair:
 				self.lasers.append(Laser((starting_point + i * Laser.LASER_LONG, elem_y), direction))
 				last_x = starting_point + i * Laser.LASER_LONG
 			self.coil_2 = Coil((last_x + Laser.LASER_LONG - half_coil_size, self.coil_1.y))
+		elif direction == 3:
+			laser_offset = (Laser.LASER_SHORT // sqrt(2))
+			starting_x = self.coil_1.x + half_coil_size - (laser_offset // 2)
+			starting_y = self.coil_1.y + half_coil_size - (laser_offset // 2)
+			last_x = last_y = 0
+			for i in range(size):
+				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),starting_y + i * (Laser.rect_size - laser_offset)), 3))
+				last_x = starting_x + i * (Laser.rect_size - laser_offset)
+				last_y = starting_y + i * (Laser.rect_size - laser_offset)
+			self.coil_2 = Coil((last_x + Laser.rect_size - (laser_offset // 2) - half_coil_size,
+								last_y + Laser.rect_size - (laser_offset // 2) - half_coil_size))
 		elif direction == 4:
 			starting_point = self.coil_1.y + half_coil_size
 			elem_x = self.coil_1.x + half_coil_size - (Laser.hor_size // 2)
@@ -338,7 +364,7 @@ if __name__ in "__main__":
 	init_game()
 	fps = []
 	player = Player()
-	objects = [CoilPair((4000, 300), 2, 5)]
+	objects = [CoilPair((2000, 300), 3, 5)]
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
