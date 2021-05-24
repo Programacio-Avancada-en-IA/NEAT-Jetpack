@@ -15,6 +15,7 @@ RUNNING = True
 PASSED = False
 CLOCK = pygame.time.Clock()
 objects = []
+max_total_fitness = 0
 
 GAME_SPEED = 8
 
@@ -31,7 +32,7 @@ LASER_IMAGES = [pygame.image.load("assets/vlaser.png"), pygame.image.load("asset
                 pygame.image.load("assets/vlaser.png")]
 
 pygame.font.init()
-FONT = pygame.font.SysFont("comicsans", 50)
+FONT = pygame.font.SysFont("comicsans", 40)
 
 
 # An image that moves when updated, used for the background, ground and lights
@@ -506,7 +507,7 @@ def object_logic(addons=None):
 
 
 def main(genomes, config):
-    global objects, RUNNING, PASSED
+    global objects, RUNNING, PASSED, max_total_fitness
     init_game()
 
     nets = []
@@ -542,23 +543,36 @@ def main(genomes, config):
             break
 
         draw_background()
-        label = FONT.render("Score", 1, (255, 255, 255))
-        SCREEN.blit(label, (10, 10))
+        max_fitness = round(max([gen.fitness for gen in ge]), 2)
+        max_total_fitness = max(max_total_fitness,max_fitness)
+        fitness_label = FONT.render("Fitness: " + str(max_fitness), 1, (255, 255, 255))
+        SCREEN.blit(fitness_label, (WIDTH - 400, 10))
+        players_label = FONT.render("Max Fitness: " + str(max_total_fitness), 1, (255, 255, 255))
+        SCREEN.blit(players_label, (WIDTH - 400, 54))
+        players_label = FONT.render("Players alive: " + str(len(players)), 1, (255, 255, 255))
+        SCREEN.blit(players_label, (WIDTH - 400, 94))
         to_remove = []
         for ind, plr in enumerate(players):
             plr.logic()
             ge[ind].fitness += 0.1
 
             player_height = HEIGHT - GROUND_HEIGHT - plr.rectangle.y + PLAYER_HEIGHT
-            if 10 < player_height < HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 10:
-                ge[ind].fitness += 0.1
-
             player_top = plr.rectangle.y
             hor_coil1 = objects[laser_ind].coil_1.rect.x - Player.x
-            hor_coil2 = objects[laser_ind].coil_2.rect.x - Player.x
+            hor_coil2 = objects[laser_ind].coil_2.rect.x + Coil.size - Player.x
             ver_coil1 = objects[laser_ind].coil_1.rect.y - plr.rectangle.y
             ver_coil2 = objects[laser_ind].coil_2.rect.y - plr.rectangle.y
-            output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2))
+            try:
+                hor_coil12 = objects[laser_ind].coil_1.rect.x - Player.x
+                hor_coil22 = objects[laser_ind].coil_2.rect.x + Coil.size - Player.x
+                ver_coil12 = objects[laser_ind].coil_1.rect.y - plr.rectangle.y
+                ver_coil22 = objects[laser_ind].coil_2.rect.y - plr.rectangle.y
+            except IndexError:
+                hor_coil12 = 30
+                hor_coil22 = 30
+                ver_coil12 = 30
+                ver_coil22 = 30
+            output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2, hor_coil12, hor_coil22, ver_coil12, ver_coil22))
 
             if output[0] > 0.5:
                 plr.activated()
