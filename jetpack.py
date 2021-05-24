@@ -4,7 +4,6 @@ from math import floor, ceil, sqrt
 import random
 import neat
 
-varibl = 0
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
@@ -113,7 +112,6 @@ class Coil:
 		self.mask = pygame.mask.from_surface(self.image)
 		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
-			print("Collision with a coil on ", self.rect.x, self.rect.y)
 			return True
 		return False
 
@@ -164,7 +162,6 @@ class Laser:
 		self.mask = pygame.mask.from_surface(self.image)
 		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
-			print("Collision with a coil on ", self.rect.x, self.rect.y)
 			return True
 		return False
 
@@ -472,8 +469,6 @@ class Player:
 		global objects
 		for obj in objects:
 			if obj.collides(self):
-				for bj in obj.objects:
-					print(bj.rect.x, bj.rect.y, "Is laser: ", type(bj) == Laser, bj.x, bj.y)
 				return True
 		return False
 
@@ -510,14 +505,13 @@ def object_logic(addons=None):
 
 
 def main(genomes, config):
-	global objects, RUNNING, PASSED, varibl
+	global objects, RUNNING, PASSED
 	init_game()
 
 	nets = []
 	ge = []
 	players = []
 	objects = [CoilPair((2000, 300), 2, 5)]
-	print(objects[0])
 
 	for _, g in genomes:
 		net = neat.nn.FeedForwardNetwork.create(g, config)
@@ -525,9 +519,6 @@ def main(genomes, config):
 		players.append(Player())
 		g.fitness = 0
 		ge.append(g)
-
-	print(varibl)
-	varibl += 1
 
 	generator = CoilPairGenerator()
 
@@ -545,7 +536,6 @@ def main(genomes, config):
 			if len(objects) > 1 and players[0].rectangle.x > objects[0].coil_2.rect.x + Coil.size:
 				laser_ind = 1
 		else:
-			print(objects)
 			RUNNING = False
 			del objects
 			break
@@ -571,11 +561,8 @@ def main(genomes, config):
 				plr.activated()
 
 			if plr.check_for_interactions():
-				# print("Player " + str(ind) + " fucking died")
 				to_remove.append(ind)
 			plr.draw()
-		if len(to_remove) > 0:
-			print(len(players))
 		for ind, ptr in enumerate(players):
 			if ind in to_remove:
 				ge[ind].fitness -= 1
