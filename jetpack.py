@@ -104,6 +104,9 @@ class Coil:
 		return self.rect.colliderect(player.rectangle)
 
 	def collides_mask(self, player):
+		if player.current_sprite is None:
+			print("Mask error")
+			return False
 		player_mask = pygame.mask.from_surface(player.current_sprite)
 		player_head_mask = pygame.mask.from_surface(player.head_sprite)
 		self.mask = pygame.mask.from_surface(self.image)
@@ -111,6 +114,9 @@ class Coil:
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
 			return True
 		return False
+
+	def destroy(self):
+		self.rect.move_ip(-WIDTH, 0)
 
 
 # A laser object that appears between 2 coils
@@ -148,6 +154,9 @@ class Laser:
 		return self.rect.colliderect(player.rectangle)
 
 	def collides_mask(self, player):
+		if player.current_sprite is None:
+			print("Mask error")
+			return False
 		player_mask = pygame.mask.from_surface(player.current_sprite)
 		player_head_mask = pygame.mask.from_surface(player.head_sprite)
 		self.mask = pygame.mask.from_surface(self.image)
@@ -162,6 +171,9 @@ class Laser:
 
 	def logic(self):
 		self.rect.move_ip(-GAME_SPEED, 0)
+
+	def destroy(self):
+		self.rect.move_ip(-WIDTH, 0)
 
 
 # A pair of coils connected by lasers, the main obstacles of the game
@@ -248,6 +260,12 @@ class CoilPair:
 				return True
 		return False
 
+	def destroy(self):
+		self.coil_1.destroy()
+		self.coil_2.destroy()
+		for laser in self.lasers:
+			laser.destroy()
+
 
 class CoilPairGenerator:
 
@@ -308,7 +326,7 @@ class CoilPairGenerator:
 	def logic(self):
 		global PASSED
 		self.last_obstacle += GAME_SPEED
-		if self.last_obstacle >= 800:
+		if self.last_obstacle >= 700:
 			self.last_obstacle = 0
 			self.generate_pair()
 			PASSED = True
@@ -322,7 +340,7 @@ class CoilPairGenerator:
 
 
 def init_game():
-	global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
+	global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C, RUNNING, objects, PASSED
 	pygame.init()
 
 	SCREEN = pygame.display.set_mode(SIZE)
@@ -364,10 +382,13 @@ def init_game():
 	for i, laser_image in enumerate(LASER_IMAGES):
 		LASER_IMAGES[i] = laser_image.convert_alpha()
 
+	objects = []
+	RUNNING = True
+	PASSED = False
+
 
 class Player:
 	x = 180
-	rectangle = pygame.Rect(x, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 
 	current_sprite = None
 	air_sprite = None
@@ -382,6 +403,7 @@ class Player:
 	acceleration = GRAVITY
 
 	def __init__(self):
+		self.rectangle = pygame.Rect(Player.x, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 		self.air_sprite = pygame.image.load("assets/on_air.png").convert_alpha()
 		self.air_sprite = pygame.transform.scale(self.air_sprite, (PLAYER_WIDTH, PLAYER_HEIGHT))
 		self.prop_sprite = pygame.image.load("assets/prop.png").convert_alpha()
@@ -393,6 +415,7 @@ class Player:
 			self.running_sp.images[i] = pygame.transform.scale(sp, (PLAYER_WIDTH, PLAYER_HEIGHT))
 		head = random.randint(1, 5)
 		self.head_sprite = pygame.image.load("assets/pibes/" + str(head) + ".png").convert_alpha()
+		self.current_sprite = self.air_sprite
 
 	def draw(self):
 		if self.state == 0:
@@ -443,9 +466,11 @@ class Player:
 		self.acceleration += FORCE
 		self.state = 2
 
-	def check_for_interactions(self, objects):
+	def check_for_interactions(self):
+		global objects
 		for obj in objects:
 			if obj.collides(self):
+				print(obj.coil_1.rect.x)
 				return True
 		return False
 
@@ -477,7 +502,6 @@ def object_logic(addons=None):
 			if obj.coil_2.rect.x + Coil.size < 0:
 				objects = objects[1:]
 				break
-	print(len(objects))
 
 
 def main(genomes, config):
@@ -487,6 +511,7 @@ def main(genomes, config):
 	nets = []
 	ge = []
 	players = []
+	objects = []
 
 	for _, g in genomes:
 		net = neat.nn.FeedForwardNetwork.create(g, config)
@@ -496,7 +521,6 @@ def main(genomes, config):
 		ge.append(g)
 
 	generator = CoilPairGenerator()
-	objects = []
 	generator.generate_pair()
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
@@ -506,15 +530,19 @@ def main(genomes, config):
 				RUNNING = False
 				sys.exit()
 
+		# print(len(players))
 		laser_ind = 0
 		if len(players) > 0:
 			if len(objects) > 1 and players[0].rectangle.x > objects[0].coil_2.rect.x + Coil.size:
 				laser_ind = 1
 		else:
 			RUNNING = False
+			for obj in objects:
+				obj.destroy()
 			break
-		print(laser_ind, len(objects))
+
 		draw_background()
+		to_remove = []
 		for ind, plr in enumerate(players):
 			plr.logic()
 			ge[ind].fitness += 0.1
@@ -530,12 +558,16 @@ def main(genomes, config):
 			if output[0] > 0.5:
 				plr.activated()
 
-			if plr.check_for_interactions(objects):
+			if plr.check_for_interactions():
+				# print("Player " + str(ind) + " fucking died")
+				to_remove.append(ind)
+			plr.draw()
+		for ind, ptr in enumerate(players):
+			if ind in to_remove:
 				ge[ind].fitness -= 1
 				players.pop(ind)
 				nets.pop(ind)
 				ge.pop(ind)
-			plr.draw()
 		object_logic([generator])
 		if PASSED:
 			for g in ge:
@@ -545,7 +577,9 @@ def main(genomes, config):
 		draw_ground()
 		# fps.append(CLOCK.get_fps())
 		pygame.display.flip()
-	# inp = input("")
+
+
+# inp = input("")
 
 
 def run(config_path):
