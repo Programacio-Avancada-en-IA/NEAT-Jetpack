@@ -24,7 +24,10 @@ PLAYER_HEIGHT = 128
 GRAVITY = 1.0
 FORCE = -1.75
 
-LASER_IMAGES = [pygame.image.load("assets/vlaser.png"), pygame.image.load("assets/dulaser.png"), pygame.image.load("assets/hlaser.png"), pygame.image.load("assets/ddlaser.png"),pygame.image.load("assets/vlaser.png")]
+LASER_IMAGES = [pygame.image.load("assets/vlaser.png"), pygame.image.load("assets/dulaser.png"),
+                pygame.image.load("assets/hlaser.png"), pygame.image.load("assets/ddlaser.png"),
+                pygame.image.load("assets/vlaser.png")]
+
 
 # An image that moves when updated, used for the background, ground and lights
 class MovingImages:
@@ -44,6 +47,7 @@ class MovingImages:
 				                            rect.width, rect.height)
 		SCREEN.blits([el for el in zip(self.images, self.rects)])
 
+
 # A sprite with different frames, used to animate the character running
 class AnimatedSprite:
 	def __init__(self, images, speed):
@@ -62,6 +66,7 @@ class AnimatedSprite:
 		SCREEN.blit(self.images[self.image_index], rect)
 		return self.images[self.image_index]
 
+
 # A single electric ball that together with lasers and another ball form a CoilPair
 class Coil:
 	rect = None
@@ -75,7 +80,7 @@ class Coil:
 		self.image = pygame.transform.scale(self.image, (self.size, self.size))
 		self.center_image = self.center_image.convert_alpha()
 		self.center_image = pygame.transform.scale(self.center_image, (self.size, self.size))
-		self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
+		self.rect = pygame.Rect(round(self.x), round(self.y), self.size, self.size)
 
 	def draw(self):
 		# pygame.draw.rect(SCREEN, (0, 0, 255), self.rect, width=3)
@@ -100,10 +105,11 @@ class Coil:
 		player_mask = pygame.mask.from_surface(player.current_sprite)
 		player_head_mask = pygame.mask.from_surface(player.head_sprite)
 		self.mask = pygame.mask.from_surface(self.image)
-		offset = (player.rectangle.x - self.rect.x, round(player.rectangle.y) - self.rect.y)
+		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
 			return True
 		return False
+
 
 # A laser object that appears between 2 coils
 class Laser:
@@ -121,13 +127,13 @@ class Laser:
 		self.image = LASER_IMAGES[direction]
 		if direction == 0 or direction == 4:
 			self.image = pygame.transform.scale(self.image, (self.hor_size, self.ver_size))
-			self.rect = pygame.Rect(self.x, self.y, self.hor_size, self.ver_size)
+			self.rect = pygame.Rect(round(self.x), round(self.y), self.hor_size, self.ver_size)
 		elif direction == 1 or direction == 3:
 			self.image = pygame.transform.scale(self.image, (Laser.rect_size, Laser.rect_size))
-			self.rect = pygame.Rect(self.x, self.y, Laser.rect_size, Laser.rect_size)
+			self.rect = pygame.Rect(round(self.x), round(self.y), Laser.rect_size, Laser.rect_size)
 		elif direction == 2:
 			self.image = pygame.transform.scale(self.image, (self.LASER_LONG, self.LASER_SHORT))
-			self.rect = pygame.Rect(self.x, self.y, self.ver_size, self.hor_size)
+			self.rect = pygame.Rect(round(self.x), round(self.y), self.ver_size, self.hor_size)
 		self.mask = pygame.mask.from_surface(self.image)
 
 	def collides(self, player):
@@ -143,7 +149,7 @@ class Laser:
 		player_mask = pygame.mask.from_surface(player.current_sprite)
 		player_head_mask = pygame.mask.from_surface(player.head_sprite)
 		self.mask = pygame.mask.from_surface(self.image)
-		offset = (player.rectangle.x - self.rect.x, round(player.rectangle.y - self.rect.y))
+		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
 			return True
 		return False
@@ -154,6 +160,7 @@ class Laser:
 
 	def logic(self):
 		self.rect.move_ip(-GAME_SPEED, 0)
+
 
 # A pair of coils connected by lasers, the main obstacles of the game
 class CoilPair:
@@ -181,11 +188,12 @@ class CoilPair:
 			starting_y = self.coil_1.y + half_coil_size + (laser_offset // 2) - (Laser.rect_size)
 			last_x = last_y = 0
 			for i in range(size):
-				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),starting_y - i * (Laser.rect_size - laser_offset)), 1))
+				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),
+				                          starting_y - i * (Laser.rect_size - laser_offset)), 1))
 				last_x = starting_x + i * (Laser.rect_size - laser_offset)
 				last_y = starting_y - i * (Laser.rect_size - laser_offset)
 			self.coil_2 = Coil((last_x + Laser.rect_size - (laser_offset // 2) - half_coil_size,
-								last_y + (laser_offset // 2) - half_coil_size))
+			                    last_y + (laser_offset // 2) - half_coil_size))
 		elif direction == 2:
 			elem_y = self.coil_1.y + half_coil_size - (Laser.LASER_SHORT // 2)
 			starting_point = self.coil_1.x + half_coil_size
@@ -200,11 +208,12 @@ class CoilPair:
 			starting_y = self.coil_1.y + half_coil_size - (laser_offset // 2)
 			last_x = last_y = 0
 			for i in range(size):
-				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),starting_y + i * (Laser.rect_size - laser_offset)), 3))
+				self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),
+				                          starting_y + i * (Laser.rect_size - laser_offset)), 3))
 				last_x = starting_x + i * (Laser.rect_size - laser_offset)
 				last_y = starting_y + i * (Laser.rect_size - laser_offset)
 			self.coil_2 = Coil((last_x + Laser.rect_size - (laser_offset // 2) - half_coil_size,
-								last_y + Laser.rect_size - (laser_offset // 2) - half_coil_size))
+			                    last_y + Laser.rect_size - (laser_offset // 2) - half_coil_size))
 		elif direction == 4:
 			starting_point = self.coil_1.y + half_coil_size
 			elem_x = self.coil_1.x + half_coil_size - (Laser.hor_size // 2)
@@ -237,22 +246,66 @@ class CoilPair:
 				return True
 		return False
 
+
 class CoilPairGenerator:
 
 	def __init__(self):
 		self.last_obstacle = 0
+		self.last_ground = 0
 
 	def generate_pair(self):
 		global objects
-		direction = random.randint(0, 4) # Random orientation between 5 possibles
-		size = random.randint(2, 5) # Random size between 2 and 5 lasers
-		height = random.randint(100, 620) # Possible heights
+		direction = random.randint(0, 4)  # Random orientation between 5 possibles
+		size = random.randint(3, 6)  # Random size between 2 and 6 lasers
+		# Possible heights
+		height = 100
+		if direction == 0:
+			height = random.randint(Laser.LASER_LONG * size, HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size)
+		elif direction == 1:
+			height = random.randint(Laser.rect_size * size, HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size)
+		elif direction == 2:
+			height = random.randint(0, HEIGHT - GROUND_HEIGHT - Coil.size)
+		elif direction == 3:
+			height = random.randint(PLAYER_HEIGHT + 30, HEIGHT - GROUND_HEIGHT - Laser.rect_size * size)
+		elif direction == 4:
+			height = random.randint(PLAYER_HEIGHT + 30, PLAYER_HEIGHT + 30 + Laser.LASER_LONG * size)
+		self.last_ground += 1
+
+		if self.last_ground > 3:
+			if direction == 0:
+				try:
+					height = random.randint(150 + Laser.LASER_LONG * size,
+					                        HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size)
+				except ValueError:
+					height = HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size
+			elif direction == 1:
+				try:
+					height = random.randint(150 + Laser.rect_size * size,
+					                        HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size)
+				except ValueError:
+					height = HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 30 - Coil.size
+			elif direction == 2:
+				try:
+					height = random.randint(150, HEIGHT - GROUND_HEIGHT - Coil.size)
+				except ValueError:
+					height = HEIGHT - GROUND_HEIGHT - Coil.size - 50
+			elif direction == 3:
+				try:
+					height = random.randint(150 + PLAYER_HEIGHT + 30, HEIGHT - GROUND_HEIGHT - Laser.rect_size * size)
+				except ValueError:
+					height = HEIGHT - GROUND_HEIGHT - Laser.rect_size * size
+			elif direction == 4:
+				try:
+					height = random.randint(150 + PLAYER_HEIGHT + 30, PLAYER_HEIGHT + 30 + Laser.LASER_LONG * size)
+				except ValueError:
+					height = PLAYER_HEIGHT + 30 + Laser.LASER_LONG * size
+			self.last_ground = 0
 		pair = CoilPair((2000, height), direction, size)
 		objects.append(pair)
 
 	def logic(self):
 		self.last_obstacle += GAME_SPEED
-		if self.last_obstacle >= 1000:
+		if self.last_obstacle >= 800:
 			self.last_obstacle = 0
 			self.generate_pair()
 
@@ -261,7 +314,8 @@ class CoilPairGenerator:
 		pass
 
 	def collides(self, player):
-		pass
+		return False
+
 
 def init_game():
 	global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C
@@ -308,8 +362,8 @@ def init_game():
 
 
 class Player:
-	rectangle = pygame.Rect(200, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
-	x = 200
+	x = 180
+	rectangle = pygame.Rect(x, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 
 	current_sprite = None
 	air_sprite = None
@@ -404,22 +458,24 @@ def draw_objects(objects):
 		obj.draw()
 
 
-def object_logic(objects):
-	for obj in objects:
+def object_logic():
+	global objects
+	for obj in objects + [player, generator]:
 		obj.logic()
-	for i, obj in enumerate(objects):
+	for obj in objects:
 		if type(obj) == CoilPair:
-			if obj.coil_2.x + Coil.size < 0:
-				objects.pop(i)
+			if obj.coil_2.rect.x + Coil.size < 0:
+				objects = objects[1:]
 				break
-
+	print(len(objects))
 
 
 if __name__ in "__main__":
 	init_game()
 	fps = []
 	player = Player()
-	objects = [CoilPairGenerator()]
+	generator = CoilPairGenerator()
+	objects = []
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
@@ -428,13 +484,13 @@ if __name__ in "__main__":
 				RUNNING = False
 		draw_background()
 		player.process_input()
-		object_logic(objects + [player])
+		object_logic()
 		player.check_for_interactions(objects)
 		draw_objects(objects)
 		player.draw()
 		draw_ground()
 		# fps.append(CLOCK.get_fps())
 		pygame.display.flip()
-		# inp = input("")
+	# inp = input("")
 
 	sys.exit()
