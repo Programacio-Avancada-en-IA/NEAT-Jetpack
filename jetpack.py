@@ -547,7 +547,7 @@ def main(genomes, config):
         max_total_fitness = max(max_total_fitness,max_fitness)
         fitness_label = FONT.render("Fitness: " + str(max_fitness), 1, (255, 255, 255))
         SCREEN.blit(fitness_label, (WIDTH - 400, 10))
-        players_label = FONT.render("Max Fitness: " + str(max_total_fitness), 1, (255, 255, 255))
+        players_label = FONT.render("MAX Fitness: " + str(max_total_fitness), 1, (255, 255, 255))
         SCREEN.blit(players_label, (WIDTH - 400, 54))
         players_label = FONT.render("Players alive: " + str(len(players)), 1, (255, 255, 255))
         SCREEN.blit(players_label, (WIDTH - 400, 94))
