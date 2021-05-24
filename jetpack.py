@@ -202,7 +202,7 @@ class CoilPair:
         elif direction == 1:
             laser_offset = (Laser.LASER_SHORT // sqrt(2))
             starting_x = self.coil_1.x + half_coil_size - (laser_offset // 2)
-            starting_y = self.coil_1.y + half_coil_size + (laser_offset // 2) - (Laser.rect_size)
+            starting_y = self.coil_1.y + half_coil_size + (laser_offset // 2) - Laser.rect_size
             last_x = last_y = 0
             for i in range(size):
                 self.lasers.append(Laser((starting_x + i * (Laser.rect_size - laser_offset),
@@ -336,6 +336,7 @@ class CoilPairGenerator:
     # Does not draw anything
     def draw(self):
         pass
+
 
     def collides(self, player):
         return False
@@ -476,13 +477,11 @@ class Player:
 
 
 def draw_background():
-    BG_COLOR = (0, 191, 255)
     BACKGROUND.update()
     FAROLES.update()
 
 
 def draw_ground():
-    G_COLOR = (105, 105, 105)
     GROUND.update()
 
 
