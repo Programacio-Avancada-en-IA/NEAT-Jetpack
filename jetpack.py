@@ -2,6 +2,7 @@ import pygame
 import sys
 from math import floor, ceil, sqrt
 import random
+import neat
 
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
@@ -11,6 +12,7 @@ FAROLES = None
 GROUND = None
 GROUND_C = None
 RUNNING = True
+PASSED = False
 CLOCK = pygame.time.Clock()
 objects = []
 
@@ -304,10 +306,12 @@ class CoilPairGenerator:
 		objects.append(pair)
 
 	def logic(self):
+		global PASSED
 		self.last_obstacle += GAME_SPEED
 		if self.last_obstacle >= 800:
 			self.last_obstacle = 0
 			self.generate_pair()
+			PASSED = True
 
 	# Does not draw anything
 	def draw(self):
@@ -432,14 +436,18 @@ class Player:
 
 	def process_input(self):
 		if pygame.mouse.get_pressed()[0]:
-			player.acceleration += FORCE
+			self.acceleration += FORCE
 			self.state = 2
 
+	def activated(self):
+		self.acceleration += FORCE
+		self.state = 2
+
 	def check_for_interactions(self, objects):
-		global RUNNING
 		for obj in objects:
 			if obj.collides(self):
-				RUNNING = False
+				return True
+		return False
 
 
 def draw_background():
@@ -458,9 +466,11 @@ def draw_objects(objects):
 		obj.draw()
 
 
-def object_logic():
+def object_logic(addons=None):
+	if addons is None:
+		addons = []
 	global objects
-	for obj in objects + [player, generator]:
+	for obj in objects + addons:
 		obj.logic()
 	for obj in objects:
 		if type(obj) == CoilPair:
@@ -470,27 +480,88 @@ def object_logic():
 	print(len(objects))
 
 
-if __name__ in "__main__":
+def main(genomes, config):
+	global objects, RUNNING, PASSED
 	init_game()
-	fps = []
-	player = Player()
+
+	nets = []
+	ge = []
+	players = []
+
+	for _, g in genomes:
+		net = neat.nn.FeedForwardNetwork.create(g, config)
+		nets.append(net)
+		players.append(Player())
+		g.fitness = 0
+		ge.append(g)
+
 	generator = CoilPairGenerator()
 	objects = []
+	generator.generate_pair()
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				# print(sum(fps)/len(fps))
 				RUNNING = False
+				sys.exit()
+
+		laser_ind = 0
+		if len(players) > 0:
+			if len(objects) > 1 and players[0].rectangle.x > objects[0].coil_2.rect.x + Coil.size:
+				laser_ind = 1
+		else:
+			RUNNING = False
+			break
+		print(laser_ind, len(objects))
 		draw_background()
-		player.process_input()
-		object_logic()
-		player.check_for_interactions(objects)
+		for ind, plr in enumerate(players):
+			plr.logic()
+			ge[ind].fitness += 0.1
+
+			player_height = HEIGHT - GROUND_HEIGHT - plr.rectangle.y + PLAYER_HEIGHT
+			player_top = plr.rectangle.y
+			hor_coil1 = objects[laser_ind].coil_1.rect.x - Player.x
+			hor_coil2 = objects[laser_ind].coil_2.rect.x - Player.x
+			ver_coil1 = objects[laser_ind].coil_1.rect.y - plr.rectangle.y
+			ver_coil2 = objects[laser_ind].coil_2.rect.y - plr.rectangle.y
+			output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2))
+
+			if output[0] > 0.5:
+				plr.activated()
+
+			if plr.check_for_interactions(objects):
+				ge[ind].fitness -= 1
+				players.pop(ind)
+				nets.pop(ind)
+				ge.pop(ind)
+			plr.draw()
+		object_logic([generator])
+		if PASSED:
+			for g in ge:
+				g.fitness += 5
+			PASSED = False
 		draw_objects(objects)
-		player.draw()
 		draw_ground()
 		# fps.append(CLOCK.get_fps())
 		pygame.display.flip()
 	# inp = input("")
 
-	sys.exit()
+
+def run(config_path):
+	config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
+	                            neat.DefaultStagnation, config_path)
+
+	# Population
+	p = neat.Population(config)
+
+	p.add_reporter(neat.StdOutReporter(True))
+	stats = neat.StatisticsReporter()
+	p.add_reporter(stats)
+
+	winner = p.run(main, 50)
+
+
+if __name__ in "__main__":
+	config_path = "config-feedforward.txt"
+	run(config_path)
