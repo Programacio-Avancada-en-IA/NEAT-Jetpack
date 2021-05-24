@@ -542,8 +542,8 @@ def main(genomes, config):
             break
 
         draw_background()
-		label = FONT.render("Score", 1, (255, 255, 255))
-		SCREEN.blit(label, (10, 10))
+        label = FONT.render("Score", 1, (255, 255, 255))
+        SCREEN.blit(label, (10, 10))
         to_remove = []
         for ind, plr in enumerate(players):
             plr.logic()
