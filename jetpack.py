@@ -4,6 +4,7 @@ from math import floor, ceil, sqrt
 import random
 import neat
 
+varibl = 0
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
@@ -112,6 +113,7 @@ class Coil:
 		self.mask = pygame.mask.from_surface(self.image)
 		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
+			print("Collision with a coil on ", self.rect.x, self.rect.y)
 			return True
 		return False
 
@@ -162,6 +164,7 @@ class Laser:
 		self.mask = pygame.mask.from_surface(self.image)
 		offset = (round(self.rect.x - player.x), round(self.rect.y - player.rectangle.y))
 		if player_mask.overlap(self.mask, offset) or player_head_mask.overlap(self.mask, offset):
+			print("Collision with a coil on ", self.rect.x, self.rect.y)
 			return True
 		return False
 
@@ -178,12 +181,12 @@ class Laser:
 
 # A pair of coils connected by lasers, the main obstacles of the game
 class CoilPair:
-	objects = []
 
 	# Location per crear el coil 1
 	# Direccio de les 5 possibles
 	# Mida del laser, si mes gran o petit
 	def __init__(self, coil_1_location, direction, size):
+		self.objects = []
 		self.coil_1 = Coil(coil_1_location)
 		# Up
 		half_coil_size = self.coil_1.size // 2
@@ -274,7 +277,6 @@ class CoilPairGenerator:
 		self.last_ground = 0
 
 	def generate_pair(self):
-		global objects
 		direction = random.randint(0, 4)  # Random orientation between 5 possibles
 		size = random.randint(3, 6)  # Random size between 2 and 6 lasers
 		# Possible heights
@@ -320,16 +322,17 @@ class CoilPairGenerator:
 				except ValueError:
 					height = PLAYER_HEIGHT + 30 + Laser.LASER_LONG * size
 			self.last_ground = 0
-		pair = CoilPair((2000, height), direction, size)
-		objects.append(pair)
+		return CoilPair((2000, height), direction, size)
 
 	def logic(self):
 		global PASSED
 		self.last_obstacle += GAME_SPEED
 		if self.last_obstacle >= 700:
 			self.last_obstacle = 0
-			self.generate_pair()
 			PASSED = True
+			return self.generate_pair()
+		return None
+
 
 	# Does not draw anything
 	def draw(self):
@@ -400,9 +403,8 @@ class Player:
 	# 2: propulsing
 	state = 0
 
-	acceleration = GRAVITY
-
 	def __init__(self):
+		self.acceleration = GRAVITY
 		self.rectangle = pygame.Rect(Player.x, 0, PLAYER_WIDTH, PLAYER_HEIGHT)
 		self.air_sprite = pygame.image.load("assets/on_air.png").convert_alpha()
 		self.air_sprite = pygame.transform.scale(self.air_sprite, (PLAYER_WIDTH, PLAYER_HEIGHT))
@@ -470,7 +472,8 @@ class Player:
 		global objects
 		for obj in objects:
 			if obj.collides(self):
-				print(obj.coil_1.rect.x)
+				for bj in obj.objects:
+					print(bj.rect.x, bj.rect.y, "Is laser: ", type(bj) == Laser, bj.x, bj.y)
 				return True
 		return False
 
@@ -492,26 +495,29 @@ def draw_objects(objects):
 
 
 def object_logic(addons=None):
+	global objects
 	if addons is None:
 		addons = []
-	global objects
 	for obj in objects + addons:
-		obj.logic()
-	for obj in objects:
+		logic = obj.logic()
+		if logic is not None:
+			objects.append(logic)
+	for i, obj in enumerate(objects):
 		if type(obj) == CoilPair:
 			if obj.coil_2.rect.x + Coil.size < 0:
-				objects = objects[1:]
+				del objects[i]
 				break
 
 
 def main(genomes, config):
-	global objects, RUNNING, PASSED
+	global objects, RUNNING, PASSED, varibl
 	init_game()
 
 	nets = []
 	ge = []
 	players = []
-	objects = []
+	objects = [CoilPair((2000, 300), 2, 5)]
+	print(objects[0])
 
 	for _, g in genomes:
 		net = neat.nn.FeedForwardNetwork.create(g, config)
@@ -520,8 +526,11 @@ def main(genomes, config):
 		g.fitness = 0
 		ge.append(g)
 
+	print(varibl)
+	varibl += 1
+
 	generator = CoilPairGenerator()
-	generator.generate_pair()
+
 	while RUNNING:
 		CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
@@ -536,9 +545,9 @@ def main(genomes, config):
 			if len(objects) > 1 and players[0].rectangle.x > objects[0].coil_2.rect.x + Coil.size:
 				laser_ind = 1
 		else:
+			print(objects)
 			RUNNING = False
-			for obj in objects:
-				obj.destroy()
+			del objects
 			break
 
 		draw_background()
@@ -548,6 +557,9 @@ def main(genomes, config):
 			ge[ind].fitness += 0.1
 
 			player_height = HEIGHT - GROUND_HEIGHT - plr.rectangle.y + PLAYER_HEIGHT
+			if player_height > 10 or player_height < HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 10:
+				ge[ind].fitness += 0.1
+
 			player_top = plr.rectangle.y
 			hor_coil1 = objects[laser_ind].coil_1.rect.x - Player.x
 			hor_coil2 = objects[laser_ind].coil_2.rect.x - Player.x
@@ -562,6 +574,8 @@ def main(genomes, config):
 				# print("Player " + str(ind) + " fucking died")
 				to_remove.append(ind)
 			plr.draw()
+		if len(to_remove) > 0:
+			print(len(players))
 		for ind, ptr in enumerate(players):
 			if ind in to_remove:
 				ge[ind].fitness -= 1
