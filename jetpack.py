@@ -4,6 +4,7 @@ from math import floor, ceil, sqrt
 import random
 import neat
 
+GEN = 0
 UPDATES_PER_SEC = 60
 SIZE = WIDTH, HEIGHT = 1280, 720
 SCREEN = None
@@ -328,7 +329,7 @@ class CoilPairGenerator:
     def logic(self):
         global PASSED
         self.last_obstacle += GAME_SPEED
-        if self.last_obstacle >= 700:
+        if self.last_obstacle >= 900:
             self.last_obstacle = 0
             PASSED = True
             return self.generate_pair()
@@ -507,13 +508,16 @@ def object_logic(addons=None):
 
 
 def main(genomes, config):
-    global objects, RUNNING, PASSED, max_total_fitness
+    global objects, RUNNING, PASSED, max_total_fitness, GEN
     init_game()
 
     nets = []
     ge = []
     players = []
     objects = [CoilPair((2000, 300), 2, 5)]
+	
+    pygame.display.set_caption("NEAT Jetpack - Gen " + str(GEN))
+    GEN += 1
 
     for _, g in genomes:
         net = neat.nn.FeedForwardNetwork.create(g, config)
@@ -540,6 +544,7 @@ def main(genomes, config):
         else:
             RUNNING = False
             del objects
+            print(max_total_fitness)
             break
 
         draw_background()
@@ -555,37 +560,41 @@ def main(genomes, config):
         for ind, plr in enumerate(players):
             plr.logic()
             ge[ind].fitness += 0.1
-
+			
             player_height = HEIGHT - GROUND_HEIGHT - plr.rectangle.y + PLAYER_HEIGHT
+            
+            if plr.rectangle.y < 30 or player_height > HEIGHT - GROUND_HEIGHT - 30:
+            	ge[ind].fitness -= 0.05
+            
             player_top = plr.rectangle.y
             hor_coil1 = objects[laser_ind].coil_1.rect.x - Player.x
             hor_coil2 = objects[laser_ind].coil_2.rect.x + Coil.size - Player.x
-            ver_coil1 = objects[laser_ind].coil_1.rect.y - plr.rectangle.y
-            ver_coil2 = objects[laser_ind].coil_2.rect.y - plr.rectangle.y
+            ver_coil1 = objects[laser_ind].coil_1.rect.y - player_height
+            ver_coil2 = objects[laser_ind].coil_2.rect.y - player_height
             try:
-                hor_coil12 = objects[laser_ind].coil_1.rect.x - Player.x
-                hor_coil22 = objects[laser_ind].coil_2.rect.x + Coil.size - Player.x
-                ver_coil12 = objects[laser_ind].coil_1.rect.y - plr.rectangle.y
-                ver_coil22 = objects[laser_ind].coil_2.rect.y - plr.rectangle.y
+                hor_coil12 = objects[laser_ind + 1].coil_1.rect.x - Player.x
+                hor_coil22 = objects[laser_ind + 1].coil_2.rect.x + Coil.size - Player.x
+                ver_coil12 = objects[laser_ind + 1].coil_1.rect.y - (plr.rectangle.y + PLAYER_HEIGHT)
+                ver_coil22 = objects[laser_ind + 1].coil_2.rect.y - (plr.rectangle.y + PLAYER_HEIGHT)
             except IndexError:
                 hor_coil12 = 30
                 hor_coil22 = 30
                 ver_coil12 = 30
                 ver_coil22 = 30
-            output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2, hor_coil12, hor_coil22, ver_coil12, ver_coil22))
+            # output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2, hor_coil12, hor_coil22, ver_coil12, ver_coil22))
+            output = nets[ind].activate((player_height, player_top, hor_coil1, hor_coil2, ver_coil1, ver_coil2, 0, 0, 0, 0))
 
             if output[0] > 0.5:
                 plr.activated()
 
             if plr.check_for_interactions():
-                to_remove.append(ind)
-            plr.draw()
-        for ind, ptr in enumerate(players):
-            if ind in to_remove:
                 ge[ind].fitness -= 1
-                players.pop(ind)
-                nets.pop(ind)
-                ge.pop(ind)
+                to_remove.append((plr, nets[ind], ge[ind], ind))
+            plr.draw()
+        for ptr, ntr, getr, ind in to_remove:
+                players.remove(ptr)
+                nets.remove(ntr)
+                ge.remove(getr)
         object_logic([generator])
         if PASSED:
             for g in ge:
