@@ -535,6 +535,18 @@ def main(genomes, config):
 		# CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
+				visualize.draw_net(config, genome=ge[0], filename="gens/GEN" + str(GEN - 1), node_names={
+					0: 'Activate propulsor',
+					-1: 'Player_height',
+					-2: 'HCoil1',
+					-3: 'HCoil2',
+					-4: 'VCoil1',
+					-5: 'VCoil2',
+					-6: 'HCoil12',
+					-7: 'HCoil22',
+					-8: 'VCoil12',
+					-9: 'VCoil22'
+				})
 				# print(sum(fps)/len(fps))
 				RUNNING = False
 				sys.exit()
