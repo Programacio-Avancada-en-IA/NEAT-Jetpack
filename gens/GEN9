@@ -1,0 +1,18 @@
+digraph {
+	node [fontsize=9 height=0.2 shape=circle width=0.2]
+	Player_height [fillcolor=lightgray shape=box style=filled]
+	HCoil1 [fillcolor=lightgray shape=box style=filled]
+	HCoil2 [fillcolor=lightgray shape=box style=filled]
+	VCoil1 [fillcolor=lightgray shape=box style=filled]
+	VCoil2 [fillcolor=lightgray shape=box style=filled]
+	HCoil12 [fillcolor=lightgray shape=box style=filled]
+	HCoil22 [fillcolor=lightgray shape=box style=filled]
+	VCoil12 [fillcolor=lightgray shape=box style=filled]
+	VCoil22 [fillcolor=lightgray shape=box style=filled]
+	"Activate propulsor" [fillcolor=lightblue style=filled]
+	HCoil1 -> "Activate propulsor" [color=green penwidth=0.15893032235034837 style=solid]
+	VCoil1 -> "Activate propulsor" [color=red penwidth=0.8479592684763664 style=solid]
+	VCoil2 -> "Activate propulsor" [color=green penwidth=0.6712730938741528 style=solid]
+	VCoil22 -> "Activate propulsor" [color=green penwidth=0.2371899570603694 style=solid]
+	HCoil22 -> "Activate propulsor" [color=red penwidth=0.1058657429913674 style=solid]
+}
