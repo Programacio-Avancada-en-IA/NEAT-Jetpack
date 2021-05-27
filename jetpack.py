@@ -535,7 +535,7 @@ def main(genomes, config):
 		# CLOCK.tick(UPDATES_PER_SEC)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				visualize.draw_net(config, genome=ge[0], filename="gens/GEN" + str(GEN - 1), node_names={
+				visualize.draw_net(config, genome=ge[0], filename="infinite", node_names={
 					0: 'Activate propulsor',
 					-1: 'Player_height',
 					-2: 'HCoil1',

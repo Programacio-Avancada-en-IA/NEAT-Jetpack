@@ -10,7 +10,10 @@ digraph {
 	VCoil12 [fillcolor=lightgray shape=box style=filled]
 	VCoil22 [fillcolor=lightgray shape=box style=filled]
 	"Activate propulsor" [fillcolor=lightblue style=filled]
-	Player_height -> "Activate propulsor" [color=green penwidth=0.5232038782510182 style=solid]
-	VCoil2 -> "Activate propulsor" [color=green penwidth=0.7131773070608137 style=solid]
-	VCoil12 -> "Activate propulsor" [color=green penwidth=0.3703567178266083 style=solid]
+	HCoil2 -> "Activate propulsor" [color=red penwidth=0.17185092437693433 style=solid]
+	VCoil1 -> "Activate propulsor" [color=red penwidth=0.4836296184700346 style=solid]
+	VCoil2 -> "Activate propulsor" [color=green penwidth=0.7341408964388713 style=solid]
+	HCoil12 -> "Activate propulsor" [color=green penwidth=0.2230054424677939 style=solid]
+	VCoil12 -> "Activate propulsor" [color=green penwidth=0.3301124424150329 style=dotted]
+	VCoil22 -> "Activate propulsor" [color=green penwidth=0.5900904159388566 style=solid]
 }

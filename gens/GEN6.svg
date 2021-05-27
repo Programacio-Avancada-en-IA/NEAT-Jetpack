@@ -5,27 +5,15 @@
  -->
 <!-- Title: %3 Pages: 1 -->
 <svg width="638pt" height="208pt"
- viewBox="0.00 0.00 637.50 207.66" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ viewBox="0.00 0.00 638.00 207.66" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 203.66)">
 <title>%3</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-203.66 633.5,-203.66 633.5,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-203.66 634,-203.66 634,4 -4,4"/>
 <!-- Player_height -->
 <g id="node1" class="node">
 <title>Player_height</title>
 <polygon fill="lightgray" stroke="black" points="80,-199.66 0,-199.66 0,-181.66 80,-181.66 80,-199.66"/>
 <text text-anchor="middle" x="40" y="-188.46" font-family="Times,serif" font-size="9.00">Player_height</text>
-</g>
-<!-- Activate propulsor -->
-<g id="node10" class="node">
-<title>Activate propulsor</title>
-<ellipse fill="lightblue" stroke="black" cx="188" cy="-72.83" rx="72.66" ry="72.66"/>
-<text text-anchor="middle" x="188" y="-70.63" font-family="Times,serif" font-size="9.00">Activate propulsor</text>
-</g>
-<!-- Player_height&#45;&gt;Activate propulsor -->
-<g id="edge1" class="edge">
-<title>Player_height&#45;&gt;Activate propulsor</title>
-<path fill="none" stroke="green" stroke-width="0.28" d="M50.64,-181.33C65.91,-169.39 95.22,-146.44 122.87,-124.81"/>
-<polygon fill="green" stroke="green" stroke-width="0.28" points="125.27,-127.37 130.99,-118.45 120.96,-121.86 125.27,-127.37"/>
 </g>
 <!-- HCoil1 -->
 <g id="node2" class="node">
@@ -33,71 +21,89 @@
 <polygon fill="lightgray" stroke="black" points="146,-199.66 98,-199.66 98,-181.66 146,-181.66 146,-199.66"/>
 <text text-anchor="middle" x="122" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil1</text>
 </g>
-<!-- HCoil1&#45;&gt;Activate propulsor -->
-<g id="edge2" class="edge">
-<title>HCoil1&#45;&gt;Activate propulsor</title>
-<path fill="none" stroke="red" stroke-width="0.6" stroke-dasharray="1,5" d="M126.75,-181.33C131.42,-173.14 139.04,-159.76 147.34,-145.19"/>
-<polygon fill="red" stroke="red" stroke-width="0.6" points="150.38,-146.92 152.29,-136.5 144.3,-143.45 150.38,-146.92"/>
-</g>
 <!-- HCoil2 -->
 <g id="node3" class="node">
 <title>HCoil2</title>
 <polygon fill="lightgray" stroke="black" points="212,-199.66 164,-199.66 164,-181.66 212,-181.66 212,-199.66"/>
 <text text-anchor="middle" x="188" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil2</text>
 </g>
+<!-- Activate propulsor -->
+<g id="node10" class="node">
+<title>Activate propulsor</title>
+<ellipse fill="lightblue" stroke="black" cx="353" cy="-72.83" rx="72.66" ry="72.66"/>
+<text text-anchor="middle" x="353" y="-70.63" font-family="Times,serif" font-size="9.00">Activate propulsor</text>
+</g>
 <!-- HCoil2&#45;&gt;Activate propulsor -->
-<g id="edge3" class="edge">
+<g id="edge1" class="edge">
 <title>HCoil2&#45;&gt;Activate propulsor</title>
-<path fill="none" stroke="red" stroke-width="0.17" d="M188,-181.33C188,-175.2 188,-166.17 188,-155.9"/>
-<polygon fill="red" stroke="red" stroke-width="0.17" points="191.5,-155.74 188,-145.74 184.5,-155.74 191.5,-155.74"/>
+<path fill="none" stroke="red" stroke-width="0.14" d="M199.6,-181.52C217.38,-169.04 252.69,-144.25 284.96,-121.59"/>
+<polygon fill="red" stroke="red" stroke-width="0.14" points="287.35,-124.19 293.53,-115.58 283.33,-118.46 287.35,-124.19"/>
 </g>
 <!-- VCoil1 -->
 <g id="node4" class="node">
 <title>VCoil1</title>
-<polygon fill="lightgray" stroke="black" points="413.5,-199.66 366.5,-199.66 366.5,-181.66 413.5,-181.66 413.5,-199.66"/>
-<text text-anchor="middle" x="390" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil1</text>
+<polygon fill="lightgray" stroke="black" points="277.5,-199.66 230.5,-199.66 230.5,-181.66 277.5,-181.66 277.5,-199.66"/>
+<text text-anchor="middle" x="254" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil1</text>
+</g>
+<!-- VCoil1&#45;&gt;Activate propulsor -->
+<g id="edge2" class="edge">
+<title>VCoil1&#45;&gt;Activate propulsor</title>
+<path fill="none" stroke="red" stroke-width="0.22" d="M261.12,-181.33C269.5,-171.53 284.21,-154.31 299.44,-136.5"/>
+<polygon fill="red" stroke="red" stroke-width="0.22" points="302.15,-138.72 305.98,-128.84 296.82,-134.17 302.15,-138.72"/>
 </g>
 <!-- VCoil2 -->
 <g id="node5" class="node">
 <title>VCoil2</title>
-<polygon fill="lightgray" stroke="black" points="277.5,-199.66 230.5,-199.66 230.5,-181.66 277.5,-181.66 277.5,-199.66"/>
-<text text-anchor="middle" x="254" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil2</text>
+<polygon fill="lightgray" stroke="black" points="342.5,-199.66 295.5,-199.66 295.5,-181.66 342.5,-181.66 342.5,-199.66"/>
+<text text-anchor="middle" x="319" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil2</text>
 </g>
 <!-- VCoil2&#45;&gt;Activate propulsor -->
-<g id="edge4" class="edge">
+<g id="edge3" class="edge">
 <title>VCoil2&#45;&gt;Activate propulsor</title>
-<path fill="none" stroke="green" stroke-width="0.58" d="M249.25,-181.33C244.58,-173.14 236.96,-159.76 228.66,-145.19"/>
-<polygon fill="green" stroke="green" stroke-width="0.58" points="231.7,-143.45 223.71,-136.5 225.62,-146.92 231.7,-143.45"/>
+<path fill="none" stroke="green" stroke-width="0.62" d="M321.45,-181.33C323.42,-174.61 326.42,-164.39 329.8,-152.88"/>
+<polygon fill="green" stroke="green" stroke-width="0.62" points="333.25,-153.54 332.71,-142.96 326.53,-151.57 333.25,-153.54"/>
 </g>
 <!-- HCoil12 -->
 <g id="node6" class="node">
 <title>HCoil12</title>
-<polygon fill="lightgray" stroke="black" points="486,-199.66 432,-199.66 432,-181.66 486,-181.66 486,-199.66"/>
-<text text-anchor="middle" x="459" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil12</text>
+<polygon fill="lightgray" stroke="black" points="415,-199.66 361,-199.66 361,-181.66 415,-181.66 415,-199.66"/>
+<text text-anchor="middle" x="388" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil12</text>
+</g>
+<!-- HCoil12&#45;&gt;Activate propulsor -->
+<g id="edge4" class="edge">
+<title>HCoil12&#45;&gt;Activate propulsor</title>
+<path fill="none" stroke="green" stroke-width="0.22" d="M385.48,-181.33C383.42,-174.5 380.26,-164.06 376.72,-152.33"/>
+<polygon fill="green" stroke="green" stroke-width="0.22" points="380.05,-151.24 373.8,-142.68 373.35,-153.27 380.05,-151.24"/>
 </g>
 <!-- HCoil22 -->
 <g id="node7" class="node">
 <title>HCoil22</title>
-<polygon fill="lightgray" stroke="black" points="558,-199.66 504,-199.66 504,-181.66 558,-181.66 558,-199.66"/>
-<text text-anchor="middle" x="531" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil22</text>
+<polygon fill="lightgray" stroke="black" points="630,-199.66 576,-199.66 576,-181.66 630,-181.66 630,-199.66"/>
+<text text-anchor="middle" x="603" y="-188.46" font-family="Times,serif" font-size="9.00">HCoil22</text>
 </g>
 <!-- VCoil12 -->
 <g id="node8" class="node">
 <title>VCoil12</title>
-<polygon fill="lightgray" stroke="black" points="348.5,-199.66 295.5,-199.66 295.5,-181.66 348.5,-181.66 348.5,-199.66"/>
-<text text-anchor="middle" x="322" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil12</text>
+<polygon fill="lightgray" stroke="black" points="486.5,-199.66 433.5,-199.66 433.5,-181.66 486.5,-181.66 486.5,-199.66"/>
+<text text-anchor="middle" x="460" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil12</text>
 </g>
 <!-- VCoil12&#45;&gt;Activate propulsor -->
 <g id="edge5" class="edge">
 <title>VCoil12&#45;&gt;Activate propulsor</title>
-<path fill="none" stroke="green" stroke-width="0.34" d="M312.36,-181.33C299.2,-169.96 274.51,-148.61 250.57,-127.92"/>
-<polygon fill="green" stroke="green" stroke-width="0.34" points="252.69,-125.13 242.84,-121.24 248.11,-130.42 252.69,-125.13"/>
+<path fill="none" stroke="red" stroke-width="0.31" stroke-dasharray="1,5" d="M452.3,-181.33C442.87,-171.12 426.01,-152.87 408.83,-134.27"/>
+<polygon fill="red" stroke="red" stroke-width="0.31" points="411.34,-131.83 401.99,-126.86 406.2,-136.58 411.34,-131.83"/>
 </g>
 <!-- VCoil22 -->
 <g id="node9" class="node">
 <title>VCoil22</title>
-<polygon fill="lightgray" stroke="black" points="629.5,-199.66 576.5,-199.66 576.5,-181.66 629.5,-181.66 629.5,-199.66"/>
-<text text-anchor="middle" x="603" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil22</text>
+<polygon fill="lightgray" stroke="black" points="557.5,-199.66 504.5,-199.66 504.5,-181.66 557.5,-181.66 557.5,-199.66"/>
+<text text-anchor="middle" x="531" y="-188.46" font-family="Times,serif" font-size="9.00">VCoil22</text>
+</g>
+<!-- VCoil22&#45;&gt;Activate propulsor -->
+<g id="edge6" class="edge">
+<title>VCoil22&#45;&gt;Activate propulsor</title>
+<path fill="none" stroke="green" stroke-width="0.8" d="M518.48,-181.52C498.56,-168.55 458.2,-142.29 422.33,-118.95"/>
+<polygon fill="green" stroke="green" stroke-width="0.8" points="424.1,-115.92 413.81,-113.4 420.28,-121.79 424.1,-115.92"/>
 </g>
 </g>
 </svg>
