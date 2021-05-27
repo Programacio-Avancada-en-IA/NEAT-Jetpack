@@ -50,6 +50,7 @@ class MovingImages:
 			rect.move_ip(i * (rect.width + offset), 0)
 		self.offset = offset
 
+	# Move and draw the moving image
 	def update(self):
 		for i, rect in enumerate(self.rects):
 			self.rects[i].move_ip(-self.speed, 0)
@@ -67,12 +68,14 @@ class AnimatedSprite:
 		self.frame_counter = 0
 		self.image_index = 0
 
+	# Update the animation counter and index
 	def update(self):
 		self.frame_counter += 1
 		if self.frame_counter % self.speed == 0:
 			self.frame_counter = 0
 			self.image_index = (self.image_index + 1) % len(self.images)
 
+	# Draw the image to the screen
 	def draw(self, rect):
 		SCREEN.blit(self.images[self.image_index], rect)
 		return self.images[self.image_index]
@@ -93,25 +96,31 @@ class Coil:
 		self.center_image = pygame.transform.scale(self.center_image, (self.size, self.size))
 		self.rect = pygame.Rect(round(self.x), round(self.y), self.size, self.size)
 
+	# Draw the image to the screen
 	def draw(self):
 		# pygame.draw.rect(SCREEN, (0, 0, 255), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
+	# Draw the center image to the screen
 	def draw_center(self):
 		SCREEN.blit(self.center_image, self.rect)
 
+	# Move to the left to make it look like the player is moving
 	def logic(self):
 		self.rect.move_ip(-GAME_SPEED, 0)
 
+	# Check if it's colliding with the player
 	def collides(self, player):
 		if self.collides_rect(player):
 			if self.collides_mask(player):
 				return True
 		return False
 
+	# Check for AABB collision
 	def collides_rect(self, player):
 		return self.rect.colliderect(player.rectangle)
 
+	# Check for mask collision
 	def collides_mask(self, player):
 		if player.current_sprite is None:
 			print("Mask error")
@@ -124,6 +133,7 @@ class Coil:
 			return True
 		return False
 
+	# Move away from the screen
 	def destroy(self):
 		self.rect.move_ip(-WIDTH, 0)
 
@@ -153,15 +163,18 @@ class Laser:
 			self.rect = pygame.Rect(round(self.x), round(self.y), self.ver_size, self.hor_size)
 		self.mask = pygame.mask.from_surface(self.image)
 
+	# Check if colliding with the player
 	def collides(self, player):
 		if self.collides_rect(player):
 			if self.collides_mask(player):
 				return True
 		return False
 
+	# Check for AABB collision
 	def collides_rect(self, player):
 		return self.rect.colliderect(player.rectangle)
 
+	# Check for mask collision
 	def collides_mask(self, player):
 		if player.current_sprite is None:
 			print("Mask error")
@@ -174,13 +187,16 @@ class Laser:
 			return True
 		return False
 
+	# Draw image to the screen
 	def draw(self):
 		# pygame.draw.rect(SCREEN, (255, 0, 0), self.rect, width=3)
 		SCREEN.blit(self.image, self.rect)
 
+	# Move to the left to make it look like the player is moving
 	def logic(self):
 		self.rect.move_ip(-GAME_SPEED, 0)
 
+	# Move away from the screen
 	def destroy(self):
 		self.rect.move_ip(-WIDTH, 0)
 
@@ -249,12 +265,14 @@ class CoilPair:
 		self.objects.append(self.coil_2)
 		self.objects.extend(self.lasers)
 
+	# Call the logic of all its objects
 	def logic(self):
 		self.coil_1.logic()
 		self.coil_2.logic()
 		for laser in self.lasers:
 			laser.logic()
 
+	# Draw the images of all its objects
 	def draw(self):
 		self.coil_1.draw()
 		self.coil_2.draw()
@@ -263,12 +281,14 @@ class CoilPair:
 		self.coil_1.draw_center()
 		self.coil_2.draw_center()
 
+	# Check if any of its objects is colliding with the player
 	def collides(self, player):
 		for obj in self.objects:
 			if obj.collides(player):
 				return True
 		return False
 
+	# Move away from the screen
 	def destroy(self):
 		self.coil_1.destroy()
 		self.coil_2.destroy()
@@ -276,12 +296,14 @@ class CoilPair:
 			laser.destroy()
 
 
+# Class used to randomly generate CoilPairs
 class CoilPairGenerator:
 
 	def __init__(self):
 		self.last_obstacle = 0
 		self.last_ground = 0
 
+	# Generate a random COilPair
 	def generate_pair(self):
 		direction = random.randint(0, 4)  # Random orientation between 5 possibles
 		size = random.randint(3, 6)  # Random size between 2 and 6 lasers
@@ -330,6 +352,7 @@ class CoilPairGenerator:
 			self.last_ground = 0
 		return CoilPair((2000, height), direction, size)
 
+	# Check if its necessary to generate a CoilPair
 	def logic(self):
 		global PASSED
 		self.last_obstacle += GAME_SPEED
@@ -343,10 +366,12 @@ class CoilPairGenerator:
 	def draw(self):
 		pass
 
+	# non physic object
 	def collides(self, player):
 		return False
 
 
+# Initialize most variables
 def init_game():
 	global SCREEN, BACKGROUND, GROUND, FAROLES, GROUND_C, RUNNING, objects, PASSED
 	pygame.init()
@@ -395,6 +420,7 @@ def init_game():
 	PASSED = False
 
 
+# Class representing a player with all its logic and functions
 class Player:
 	x = 180
 
@@ -424,6 +450,7 @@ class Player:
 		self.head_sprite = pygame.image.load("assets/pibes/" + str(head) + ".png").convert_alpha()
 		self.current_sprite = self.air_sprite
 
+	# Draw the correct sprite to the screen
 	def draw(self):
 		if self.state == 0:
 			self.running_sp.update()
@@ -437,6 +464,7 @@ class Player:
 		# pygame.draw.rect(SCREEN, (0, 255, 0), self.rectangle, width=3)
 		SCREEN.blit(self.head_sprite, self.rectangle)
 
+	# Move the player up or down, according to its acceleration and collisions with the ground or ceiling
 	def affected_by_acceleration(self):
 		# Crear rectangle copia
 		# Moure copia
@@ -455,6 +483,7 @@ class Player:
 			self.rectangle.move_ip(0, floor(self.acceleration))
 			self.acceleration += GRAVITY
 
+	# Apply acceleration to the player and change its animation state if necessary
 	def logic(self):
 		self.affected_by_acceleration()
 		if self.rectangle.y >= (HEIGHT - GROUND_HEIGHT - PLAYER_HEIGHT - 1):
@@ -464,15 +493,17 @@ class Player:
 			# Player not running and not propulsing
 			self.state = 1
 
+	# Check for player input
 	def process_input(self):
 		if pygame.mouse.get_pressed()[0]:
-			self.acceleration += FORCE
-			self.state = 2
+			self.activated()
 
+	# Activate the input
 	def activated(self):
 		self.acceleration += FORCE
 		self.state = 2
 
+	# Check if colliding with any objects
 	def check_for_interactions(self):
 		global objects
 		for obj in objects:
@@ -481,20 +512,24 @@ class Player:
 		return False
 
 
+# Update and draw background
 def draw_background():
 	BACKGROUND.update()
 	FAROLES.update()
 
 
+# Update and draw ground
 def draw_ground():
 	GROUND.update()
 
 
+# Draw all objects to the screen
 def draw_objects(objects):
 	for obj in objects:
 		obj.draw()
 
 
+# Apply logic to all objects in the screen
 def object_logic(addons=None):
 	global objects
 	if addons is None:
@@ -510,6 +545,7 @@ def object_logic(addons=None):
 				break
 
 
+# Run a generation
 def main(genomes, config):
 	global objects, RUNNING, PASSED, max_total_fitness, GEN
 	init_game()
@@ -634,9 +670,7 @@ def main(genomes, config):
 		pygame.display.flip()
 
 
-# inp = input("")
-
-
+# Main program
 def run(config_path):
 	config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
 	                            neat.DefaultStagnation, config_path)
